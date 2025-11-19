@@ -39,6 +39,7 @@ return [
     'common.error' => 'Error',
     'common.success' => 'Success',
     'common.loading' => 'Loading...',
+    'common.actions' => 'Actions',
     
     // Dashboard
     'dashboard.title' => 'Dashboard',
@@ -209,6 +210,7 @@ return [
     'admin.search_users' => 'Search Users',
     'admin.search_by_ip' => 'Search by IP',
     'admin.search_by_google_id' => 'Search by Google ID',
+    'admin.search_by_name' => 'Search by Name',
     'admin.search' => 'Search',
     'admin.assign_enterprise' => 'Assign ENTERPRISE Plan',
     'admin.users' => 'Users',
@@ -219,6 +221,7 @@ return [
     'admin.logged_in_at' => 'Last Access',
     'admin.plan' => 'Plan',
     'admin.links' => 'Links',
+    'admin.rows_per_page' => 'Rows',
     
     // Redirect
     'redirect.not_found_title' => 'Link not found',

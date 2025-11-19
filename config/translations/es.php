@@ -39,6 +39,7 @@ return [
     'common.error' => 'Error',
     'common.success' => 'Éxito',
     'common.loading' => 'Cargando...',
+    'common.actions' => 'Acciones',
     
     // Dashboard
     'dashboard.title' => 'Dashboard',
@@ -209,6 +210,7 @@ return [
     'admin.search_users' => 'Buscar Usuarios',
     'admin.search_by_ip' => 'Buscar por IP',
     'admin.search_by_google_id' => 'Buscar por Google ID',
+    'admin.search_by_name' => 'Buscar por Nombre',
     'admin.search' => 'Buscar',
     'admin.assign_enterprise' => 'Asignar Plan ENTERPRISE',
     'admin.users' => 'Usuarios',
@@ -219,6 +221,7 @@ return [
     'admin.logged_in_at' => 'Último Acceso',
     'admin.plan' => 'Plan',
     'admin.links' => 'Enlaces',
+    'admin.rows_per_page' => 'Filas',
     
     // Redirect
     'redirect.not_found_title' => 'Enlace no encontrado',

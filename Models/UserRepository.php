@@ -101,6 +101,21 @@ class UserRepository
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    public function searchByName(string $query): array
+    {
+        $searchTerm = '%' . trim($query) . '%';
+        $statement = $this->db->prepare(
+            'SELECT * FROM users 
+             WHERE (name LIKE :query1 OR email LIKE :query2) 
+             ORDER BY created_at DESC'
+        );
+        $statement->execute([
+            'query1' => $searchTerm,
+            'query2' => $searchTerm
+        ]);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
     public function getPlanLimits(string $plan): array
     {
         return match($plan) {
