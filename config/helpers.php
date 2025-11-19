@@ -95,8 +95,11 @@ function formatBytes(int $bytes, int $precision = 2): string
     return round($bytes, $precision) . ' ' . $units[$pow];
 }
 
-function html(string $text): string
+function html(?string $text): string
 {
+    if ($text === null) {
+        return '';
+    }
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 

@@ -105,13 +105,18 @@ require __DIR__ . '/../views/partials/header.php';
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                             <?php foreach ($recentLinks as $link): ?>
                                 <div style="padding: 0.75rem; background: var(--color-bg-secondary, #1e293b); border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <?php $code = $link['short_code'] ?? ''; ?>
                                     <div>
-                                        <strong><?= html($link['label'] ?: $link['short_code']) ?></strong><br>
-                                        <small style="color: var(--color-text-muted);">
-                                            <?= html($appConfig['base_url']) ?>/<?= html($link['short_code']) ?>
-                                        </small>
+                                        <strong><?= html($link['label'] ?? $code ?: 'Sin código') ?></strong><br>
+                                        <?php if ($code): ?>
+                                            <small style="color: var(--color-text-muted);">
+                                                <?= html($appConfig['base_url']) ?>/<?= html($code) ?>
+                                            </small>
+                                        <?php endif; ?>
                                     </div>
-                                    <a href="/link/<?= html($link['short_code']) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem;">Ver</a>
+                                    <?php if ($code): ?>
+                                        <a href="/link/<?= html($code) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem;">Ver</a>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>

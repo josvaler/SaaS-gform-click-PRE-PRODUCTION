@@ -132,8 +132,9 @@ require __DIR__ . '/../views/partials/header.php';
                                     <tr style="border-bottom: 1px solid var(--color-border, #334155);">
                                         <td style="padding: 0.75rem;"><?= html($link['label'] ?: '-') ?></td>
                                         <td style="padding: 0.75rem;">
-                                            <a href="/<?= html($link['short_code']) ?>" target="_blank" style="color: #60a5fa;">
-                                                <?= html($link['short_code']) ?>
+                                            <?php $code = $link['short_code'] ?? ''; ?>
+                                            <a href="/<?= html($code) ?>" target="_blank" style="color: #60a5fa;">
+                                                <?= html($code) ?>
                                             </a>
                                         </td>
                                         <td style="padding: 0.75rem;">
@@ -150,9 +151,12 @@ require __DIR__ . '/../views/partials/header.php';
                                                 <?= $isExpired ? 'Expirado' : ($link['is_active'] == 1 ? 'Activo' : 'Inactivo') ?>
                                             </span>
                                         </td>
-                                        <td style="padding: 0.75rem;"><?= date('d/m/Y', strtotime($link['created_at'])) ?></td>
+                                        <td style="padding: 0.75rem;"><?= !empty($link['created_at']) ? date('d/m/Y', strtotime($link['created_at'])) : '-' ?></td>
                                         <td style="padding: 0.75rem;">
-                                            <a href="/link/<?= html($link['short_code']) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem; margin-right: 0.5rem;">Ver</a>
+                                            <?php $code = $link['short_code'] ?? ''; ?>
+                                            <?php if ($code): ?>
+                                                <a href="/link/<?= html($code) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem; margin-right: 0.5rem;">Ver</a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

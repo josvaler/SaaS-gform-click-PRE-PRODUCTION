@@ -141,7 +141,7 @@ require __DIR__ . '/../views/partials/header.php';
                                             <td style="padding: 0.75rem;"><?= html($log['email'] ?? 'N/A') ?></td>
                                             <td style="padding: 0.75rem;"><code><?= html($log['ip_address']) ?></code></td>
                                             <td style="padding: 0.75rem;"><code><?= html($log['google_id'] ?? 'N/A') ?></code></td>
-                                            <td style="padding: 0.75rem;"><?= date('d/m/Y H:i', strtotime($log['logged_in_at'])) ?></td>
+                                            <td style="padding: 0.75rem;"><?= !empty($log['logged_in_at']) ? date('d/m/Y H:i', strtotime($log['logged_in_at'])) : '-' ?></td>
                                             <td style="padding: 0.75rem;">
                                                 <span class="badge <?= $log['plan'] === 'PREMIUM' ? 'premium-badge' : ($log['plan'] === 'ENTERPRISE' ? 'enterprise-badge' : 'free-badge') ?>">
                                                     <?= html($log['plan'] ?? 'FREE') ?>

@@ -41,14 +41,61 @@ class QrCodeService
                 $result = $writer->write($qrCode);
                 file_put_contents($filePath, $result->getString());
             } else {
-                // Fallback: Use Google Charts API (simple but requires internet)
+                // Fallback: Use QR Server API (simple but requires internet)
                 $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($url);
-                $qrImage = file_get_contents($qrUrl);
                 
-                if ($qrImage !== false) {
-                    file_put_contents($filePath, $qrImage);
+                // Use curl if available, otherwise file_get_contents
+                if (function_exists('curl_init')) {
+                    $ch = curl_init($qrUrl);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                    $qrImage = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    
+                    if ($qrImage === false || $httpCode !== 200) {
+                        error_log('QR Code API failed: HTTP ' . $httpCode);
+                        return null;
+                    }
                 } else {
-                    // If API fails, return null
+                    $context = stream_context_create([
+                        'http' => [
+                            'timeout' => 10,
+                            'follow_location' => true,
+                        ]
+                    ]);
+                    $qrImage = @file_get_contents($qrUrl, false, $context);
+                    
+                    if ($qrImage === false) {
+                        error_log('QR Code API failed: file_get_contents returned false');
+                        return null;
+                    }
+                }
+                
+                // Ensure directory exists and is writable
+                if (!is_dir($this->qrDirectory)) {
+                    if (!mkdir($this->qrDirectory, 0755, true)) {
+                        error_log('QR Code directory creation failed: ' . $this->qrDirectory);
+                        return null;
+                    }
+                }
+                
+                if (!is_writable($this->qrDirectory)) {
+                    error_log('QR Code directory not writable: ' . $this->qrDirectory);
+                    return null;
+                }
+                
+                // Write the file
+                $bytesWritten = @file_put_contents($filePath, $qrImage);
+                if ($bytesWritten === false) {
+                    error_log('QR Code file write failed: ' . $filePath);
+                    return null;
+                }
+                
+                // Verify file was created
+                if (!file_exists($filePath)) {
+                    error_log('QR Code file was not created: ' . $filePath);
                     return null;
                 }
             }

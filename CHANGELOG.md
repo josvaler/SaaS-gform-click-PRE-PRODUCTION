@@ -2,6 +2,46 @@
 
 All notable changes to GForms ShortLinks will be documented in this file.
 
+## [0.03] - 2025-11-19
+
+### Fixed
+- **Critical**: Fixed QR code not displaying due to variable overwrite in header.php
+  - The `$link` variable was being overwritten by `foreach` loops in `header.php`
+  - Solution: Store link data in `$linkData` before including header, restore after
+  - QR codes now display correctly with "✓ Show QR" message
+
+## [0.02] - 2025-11-19
+
+### Fixed
+- **QR Code Display**: Completely rewrote QR code validation logic
+  - Added explicit checks for database path and filesystem file existence
+  - Improved error messages with specific reasons (DB missing vs file missing)
+  - Added comprehensive debug logging
+  - Fixed QR directory path configuration (`config/config.php`)
+- **Error Handling**: Fixed undefined array key warnings
+  - Added null checks for `original_url`, `is_active`, `created_at`, `expires_at`
+  - Fixed `strtotime()` receiving null values
+  - Added defensive checks in `link-details.php`, `links.php`, `admin.php`
+- **QR Code Service**: Enhanced error handling and path resolution
+  - Improved file existence checks
+  - Better error logging
+  - Fixed QR directory path resolution
+
+## [0.01] - 2025-11-19
+
+### Fixed
+- **QR Code Generation**: Fixed QR code path configuration issue
+  - Corrected `qr_dir` path in `config/config.php` (was using `../../public/qr`, now `../public/qr`)
+  - Enhanced `QrCodeService` with better error handling and curl support
+  - Added file permission checks and validation
+- **Regenerate QR Route**: Fixed routing for `/regenerate-qr` endpoint
+  - Added specific route in `.htaccess` before general `.php` rule
+  - Added to exclusion list to prevent short code redirect conflicts
+  - Improved error handling in `regenerate-qr.php`
+- **Date Handling**: Fixed null value handling in date formatting
+  - Added `?string` type hint to `html()` helper function
+  - Added null checks before calling `strtotime()`
+
 ## [1.0.0] - 2025-11-18
 
 ### Initial Release - GForms ShortLinks

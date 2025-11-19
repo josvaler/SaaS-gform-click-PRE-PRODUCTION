@@ -2,19 +2,22 @@
 RewriteEngine On
 RewriteBase /
 
+# --- Regenerate QR route (must come before general .php rule) ---
+RewriteRule ^regenerate-qr$ regenerate-qr.php [L,QSA]
+
+# --- Link details route ---
+RewriteRule ^link/([a-zA-Z0-9_-]+)$ link-details.php?code=$1 [L,QSA]
+
 # --- Quitar .php de las URLs ---
 # Si el archivo existe con .php, servirlo sin mostrar la extensión
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^(.*)$ $1.php [L]
 
-# --- Link details route ---
-RewriteRule ^link/([a-zA-Z0-9_-]+)$ link-details.php?code=$1 [L,QSA]
-
 # --- Short code redirects ---
 # If not a file, directory, or known route, try redirect handler
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/(login|dashboard|profile|create-link|links|link|pricing|billing|logout|admin|stripe|qr|assets) [NC]
+RewriteCond %{REQUEST_URI} !^/(login|dashboard|profile|create-link|links|link|pricing|billing|logout|admin|stripe|qr|assets|regenerate-qr) [NC]
 RewriteRule ^([a-zA-Z0-9_-]+)$ redirect.php [L,QSA]
 
 # --- Evitar acceso directo a PHP internos ---
