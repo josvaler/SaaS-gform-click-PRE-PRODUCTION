@@ -49,6 +49,7 @@ return [
     'dashboard.links_total' => 'Enlaces Totales',
     'dashboard.links_active' => 'Enlaces Activos',
     'dashboard.create_link' => 'Crear Nuevo Enlace',
+    'dashboard.explore_links' => 'Explorar Links',
     'dashboard.manage_links' => 'Gestionar Enlaces',
     'dashboard.recent_links' => 'Enlaces Recientes',
     'dashboard.no_code' => 'Sin código',
@@ -233,5 +234,19 @@ return [
     'lang.english' => 'English',
     'lang.spanish' => 'Español',
     'lang.select' => 'Idioma',
+    
+    // Explore Links
+    'explore.title' => 'Explorar Links',
+    'explore.subtitle' => 'Busca y gestiona todos tus enlaces',
+    'explore.delete_confirm_title' => 'Confirmar Eliminación',
+    'explore.delete_confirm_message' => '¿Estás seguro de que deseas eliminar este enlace?',
+    'explore.delete_warning_irreversible' => 'Esta operación es irreversible.',
+    'explore.delete_warning_access_lost' => 'Las personas que tengan este enlace perderán el acceso.',
+    'explore.delete_button_cancel' => 'Cancelar',
+    'explore.delete_button_confirm' => 'Eliminar Permanentemente',
+    'explore.toggle_activate' => 'Activar',
+    'explore.toggle_deactivate' => 'Desactivar',
+    'explore.date_from' => 'Desde',
+    'explore.date_to' => 'Hasta',
 ];
 

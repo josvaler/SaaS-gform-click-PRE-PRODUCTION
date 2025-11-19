@@ -16,8 +16,10 @@ $quotaRepo = new QuotaRepository($pdo);
 $quotaService = new QuotaService($quotaRepo);
 
 $currentPlan = ($user['plan'] ?? 'FREE');
+$currentRole = ($user['role'] ?? 'USER');
 $isPremium = ($currentPlan === 'PREMIUM');
 $isEnterprise = ($currentPlan === 'ENTERPRISE');
+$isAdmin = ($currentRole === 'ADMIN');
 
 // Get quota status
 $quotaStatus = $quotaService->getQuotaStatus((int)$user['id'], $currentPlan);
@@ -35,6 +37,9 @@ $navLinksLeft = [
     ['label' => t('nav.pricing'), 'href' => '/pricing'],
     ['label' => t('nav.my_plan'), 'href' => '/billing'],
 ];
+if ($isAdmin) {
+    $navLinksLeft[] = ['label' => t('nav.admin'), 'href' => '/admin'];
+}
 $navLinksRight = [
     ['label' => t('nav.logout'), 'href' => '/logout'],
 ];
@@ -50,8 +55,8 @@ require __DIR__ . '/../views/partials/header.php';
                     <h2><?= t('dashboard.welcome', ['name' => html($user['name'] ?? 'User')]) ?></h2>
                     <p class="text-muted"><?= t('dashboard.subtitle') ?></p>
                 </div>
-                <span class="badge <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
-                    <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                <span class="badge <?= $isAdmin ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge')) ?>">
+                    <?= $isAdmin ? '👑 ADMIN' : ($isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE')) ?>
                 </span>
             </div>
 
@@ -93,6 +98,7 @@ require __DIR__ . '/../views/partials/header.php';
                 <!-- Quick Actions -->
                 <div style="margin-bottom: 2rem;">
                     <a href="/create-link" class="btn btn-primary" style="margin-right: 1rem;"><?= t('dashboard.create_link') ?></a>
+                    <a href="/explore" class="btn btn-outline" style="margin-right: 1rem;"><?= t('dashboard.explore_links') ?></a>
                     <?php if ($isPremium || $isEnterprise): ?>
                         <a href="/links" class="btn btn-outline"><?= t('dashboard.manage_links') ?></a>
                     <?php endif; ?>
@@ -128,6 +134,7 @@ require __DIR__ . '/../views/partials/header.php';
                     <div class="alert alert-info">
                         <strong><?= t('pricing.upgrade_premium') ?></strong><br>
                         <?= t('dashboard.upgrade_prompt') ?>
+                        <p>
                         <a href="/pricing" class="btn btn-primary" style="margin-top: 1rem;"><?= t('pricing.choose_plan') ?></a>
                     </div>
                 <?php endif; ?>

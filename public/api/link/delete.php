@@ -1,0 +1,67 @@
+<?php
+declare(strict_types=1);
+
+use App\Models\ShortLinkRepository;
+use App\Services\QrCodeService;
+
+require __DIR__ . '/../../../config/bootstrap.php';
+require_auth();
+
+header('Content-Type: application/json');
+
+$user = session_user();
+if (!$user || empty($user['id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+// Validate CSRF token
+$csrfToken = $_POST['csrf_token'] ?? '';
+if (!validate_csrf_token($csrfToken)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => t('error.invalid_csrf')]);
+    exit;
+}
+
+$linkId = (int)($_POST['link_id'] ?? 0);
+if ($linkId <= 0) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid link ID']);
+    exit;
+}
+
+$pdo = db();
+$shortLinkRepo = new ShortLinkRepository($pdo);
+
+// Get link data before deletion to access QR path
+$link = $shortLinkRepo->findById($linkId);
+if (!$link || (int)$link['user_id'] !== (int)$user['id']) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Link not found or access denied']);
+    exit;
+}
+
+// Delete QR file if exists
+if (!empty($link['qr_code_path'])) {
+    $appConfig = require __DIR__ . '/../../../config/config.php';
+    $qrService = new QrCodeService($appConfig['qr_dir'], $appConfig['base_url']);
+    $qrService->deleteQrCode($link['qr_code_path']);
+}
+
+// Delete link from database
+$deleted = $shortLinkRepo->deleteByUserAndId((int)$user['id'], $linkId);
+
+if ($deleted) {
+    echo json_encode(['success' => true, 'message' => t('common.success')]);
+} else {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => t('error.generic')]);
+}
+

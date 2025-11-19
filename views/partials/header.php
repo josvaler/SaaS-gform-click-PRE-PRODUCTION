@@ -24,8 +24,10 @@ $userAvatar = $currentUser['avatar'] ?? $currentUser['avatar_url'] ?? null;
 $userName = $currentUser['name'] ?? 'User';
 $userEmail = $currentUser['email'] ?? '';
 $userPlan = $currentUser['plan'] ?? 'FREE';
+$userRole = $currentUser['role'] ?? 'USER';
 $isPremium = $userPlan === 'PREMIUM';
 $isEnterprise = $userPlan === 'ENTERPRISE';
+$isAdmin = $userRole === 'ADMIN';
 $showAds = $currentUser && $userPlan === 'FREE';
 ?>
 <!DOCTYPE html>
@@ -35,6 +37,7 @@ $showAds = $currentUser && $userPlan === 'FREE';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= html($pageTitle) ?></title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 <body>
@@ -82,8 +85,8 @@ $showAds = $currentUser && $userPlan === 'FREE';
                             <?php else: ?>
                                 <div class="user-avatar-placeholder"><?= strtoupper(substr($userName, 0, 1)) ?></div>
                             <?php endif; ?>
-                            <span class="plan-badge-compact <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
-                                <?= $isEnterprise ? '🏢' : ($isPremium ? '💎' : '⭐') ?>
+                            <span class="plan-badge-compact <?= $isAdmin ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge')) ?>">
+                                <?= $isAdmin ? '👑' : ($isEnterprise ? '🏢' : ($isPremium ? '💎' : '⭐')) ?>
                             </span>
                         </button>
                         <div class="user-dropdown">
@@ -98,8 +101,8 @@ $showAds = $currentUser && $userPlan === 'FREE';
                                 <div class="user-dropdown-info">
                                     <div class="user-dropdown-name"><?= html($userName) ?></div>
                                     <div class="user-dropdown-email"><?= html($userEmail) ?></div>
-                                    <div class="user-dropdown-plan <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
-                                        <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                                    <div class="user-dropdown-plan <?= $isAdmin ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge')) ?>">
+                                        <?= $isAdmin ? '👑 ADMIN' : ($isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE')) ?>
                                     </div>
                                 </div>
                             </div>
@@ -109,6 +112,11 @@ $showAds = $currentUser && $userPlan === 'FREE';
                                         <?= html($link['label']) ?>
                                     </a>
                                 <?php endforeach; ?>
+                                <?php if ($isAdmin): ?>
+                                    <a href="/admin" class="user-dropdown-item <?= $isActive('/admin') ? 'active' : '' ?>">
+                                        <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i><?= t('nav.admin') ?>
+                                    </a>
+                                <?php endif; ?>
                                 <a href="/profile" class="user-dropdown-item"><?= t('nav.profile') ?></a>
                             </div>
                         </div>
@@ -134,12 +142,17 @@ $showAds = $currentUser && $userPlan === 'FREE';
                                 <?= html($link['label']) ?>
                             </a>
                         <?php endforeach; ?>
+                        <?php if ($isAdmin): ?>
+                            <a href="/admin" class="mobile-nav-link <?= $isActive('/admin') ? 'active' : '' ?>">
+                                <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i><?= t('nav.admin') ?>
+                            </a>
+                        <?php endif; ?>
                         <a href="/profile" class="mobile-nav-link"><?= t('nav.profile') ?></a>
                         <div class="mobile-user-info">
                             <div class="mobile-user-name"><?= html($userName) ?></div>
                             <div class="mobile-user-email"><?= html($userEmail) ?></div>
-                            <div class="mobile-user-plan <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
-                                <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                            <div class="mobile-user-plan <?= $isAdmin ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge')) ?>">
+                                <?= $isAdmin ? '👑 ADMIN' : ($isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE')) ?>
                             </div>
                         </div>
                     <?php else: ?>

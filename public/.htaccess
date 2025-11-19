@@ -17,7 +17,7 @@ RewriteRule ^(.*)$ $1.php [L]
 # If not a file, directory, or known route, try redirect handler
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/(login|dashboard|profile|create-link|links|link|pricing|billing|logout|admin|stripe|qr|assets|regenerate-qr|set-language|terms|privacy) [NC]
+RewriteCond %{REQUEST_URI} !^/(login|dashboard|profile|create-link|links|link|pricing|billing|logout|admin|stripe|qr|assets|regenerate-qr|set-language|terms|privacy|explore|api) [NC]
 RewriteRule ^([a-zA-Z0-9_-]+)$ redirect.php [L,QSA]
 
 # --- Evitar acceso directo a PHP internos ---

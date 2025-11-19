@@ -49,6 +49,7 @@ return [
     'dashboard.links_total' => 'Total Links',
     'dashboard.links_active' => 'Active Links',
     'dashboard.create_link' => 'Create New Link',
+    'dashboard.explore_links' => 'Explore Links',
     'dashboard.manage_links' => 'Manage Links',
     'dashboard.recent_links' => 'Recent Links',
     'dashboard.no_code' => 'No code',
@@ -233,5 +234,19 @@ return [
     'lang.english' => 'English',
     'lang.spanish' => 'Español',
     'lang.select' => 'Language',
+    
+    // Explore Links
+    'explore.title' => 'Explore Links',
+    'explore.subtitle' => 'Search and manage all your links',
+    'explore.delete_confirm_title' => 'Confirm Deletion',
+    'explore.delete_confirm_message' => 'Are you sure you want to delete this link?',
+    'explore.delete_warning_irreversible' => 'This operation is irreversible.',
+    'explore.delete_warning_access_lost' => 'People who have this link will lose access.',
+    'explore.delete_button_cancel' => 'Cancel',
+    'explore.delete_button_confirm' => 'Delete Permanently',
+    'explore.toggle_activate' => 'Activate',
+    'explore.toggle_deactivate' => 'Deactivate',
+    'explore.date_from' => 'From',
+    'explore.date_to' => 'To',
 ];
 

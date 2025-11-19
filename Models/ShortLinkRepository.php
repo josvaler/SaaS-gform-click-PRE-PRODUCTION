@@ -115,6 +115,20 @@ class ShortLinkRepository
         $statement->execute(['id' => $id]);
     }
 
+    public function deleteByUserAndId(int $userId, int $id): bool
+    {
+        // First verify ownership
+        $link = $this->findById($id);
+        if (!$link || (int)$link['user_id'] !== $userId) {
+            return false;
+        }
+        
+        // Delete the link
+        $statement = $this->db->prepare('DELETE FROM short_links WHERE id = :id AND user_id = :user_id');
+        $statement->execute(['id' => $id, 'user_id' => $userId]);
+        return $statement->rowCount() > 0;
+    }
+
     public function getActiveLinks(int $userId): array
     {
         $statement = $this->db->prepare(
@@ -156,6 +170,104 @@ class ShortLinkRepository
         $statement->bindValue('offset', $offset, PDO::PARAM_INT);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function searchByUserWithFilters(
+        int $userId, 
+        ?string $query = null, 
+        ?string $status = null,
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        int $limit = 50, 
+        int $offset = 0
+    ): array {
+        $conditions = ['user_id = :user_id'];
+        $params = ['user_id' => $userId];
+        
+        // Search query
+        if (!empty($query)) {
+            $searchTerm = '%' . $query . '%';
+            $conditions[] = '(label LIKE :query OR original_url LIKE :query OR short_code LIKE :query)';
+            $params['query'] = $searchTerm;
+        }
+        
+        // Status filter
+        if ($status === 'active') {
+            $conditions[] = 'is_active = 1 AND (expires_at IS NULL OR expires_at > NOW())';
+        } elseif ($status === 'inactive') {
+            $conditions[] = 'is_active = 0';
+        } elseif ($status === 'expired') {
+            $conditions[] = 'expires_at IS NOT NULL AND expires_at <= NOW()';
+        }
+        
+        // Date range filter
+        if (!empty($dateFrom)) {
+            $conditions[] = 'DATE(created_at) >= :date_from';
+            $params['date_from'] = $dateFrom;
+        }
+        if (!empty($dateTo)) {
+            $conditions[] = 'DATE(created_at) <= :date_to';
+            $params['date_to'] = $dateTo;
+        }
+        
+        $sql = 'SELECT * FROM short_links 
+                WHERE ' . implode(' AND ', $conditions) . '
+                ORDER BY created_at DESC 
+                LIMIT :limit OFFSET :offset';
+        
+        $statement = $this->db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $statement->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
+        $statement->bindValue('offset', $offset, PDO::PARAM_INT);
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countByUserWithFilters(
+        int $userId,
+        ?string $query = null,
+        ?string $status = null,
+        ?string $dateFrom = null,
+        ?string $dateTo = null
+    ): int {
+        $conditions = ['user_id = :user_id'];
+        $params = ['user_id' => $userId];
+        
+        // Search query
+        if (!empty($query)) {
+            $searchTerm = '%' . $query . '%';
+            $conditions[] = '(label LIKE :query OR original_url LIKE :query OR short_code LIKE :query)';
+            $params['query'] = $searchTerm;
+        }
+        
+        // Status filter
+        if ($status === 'active') {
+            $conditions[] = 'is_active = 1 AND (expires_at IS NULL OR expires_at > NOW())';
+        } elseif ($status === 'inactive') {
+            $conditions[] = 'is_active = 0';
+        } elseif ($status === 'expired') {
+            $conditions[] = 'expires_at IS NOT NULL AND expires_at <= NOW()';
+        }
+        
+        // Date range filter
+        if (!empty($dateFrom)) {
+            $conditions[] = 'DATE(created_at) >= :date_from';
+            $params['date_from'] = $dateFrom;
+        }
+        if (!empty($dateTo)) {
+            $conditions[] = 'DATE(created_at) <= :date_to';
+            $params['date_to'] = $dateTo;
+        }
+        
+        $sql = 'SELECT COUNT(*) FROM short_links WHERE ' . implode(' AND ', $conditions);
+        $statement = $this->db->prepare($sql);
+        foreach ($params as $key => $value) {
+            $statement->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $statement->execute();
+        return (int)$statement->fetchColumn();
     }
 
     public function isShortCodeUnique(string $shortCode, ?int $excludeId = null): bool
