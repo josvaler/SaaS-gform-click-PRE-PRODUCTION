@@ -1,0 +1,40 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Composer
+/vendor/
+composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Uploads (if contains user data)
+/uploads/*
+!/uploads/.gitkeep
+/processed/*
+!/processed/.gitkeep
+
+# QR codes (generated files)
+/public/qr/*.png
+!/public/qr/.gitkeep
+
+# Session files
+/var/lib/php/sessions/*
+
+# Temporary files
+tmp/
+temp/

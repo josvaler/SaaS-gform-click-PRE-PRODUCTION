@@ -1,0 +1,135 @@
+<?php
+declare(strict_types=1);
+
+use App\Models\ShortLinkRepository;
+use App\Models\QuotaRepository;
+use App\Services\QuotaService;
+
+require __DIR__ . '/../config/bootstrap.php';
+require_auth();
+
+$user = session_user();
+$pdo = db();
+
+$shortLinkRepo = new ShortLinkRepository($pdo);
+$quotaRepo = new QuotaRepository($pdo);
+$quotaService = new QuotaService($quotaRepo);
+
+$currentPlan = ($user['plan'] ?? 'FREE');
+$isPremium = ($currentPlan === 'PREMIUM');
+$isEnterprise = ($currentPlan === 'ENTERPRISE');
+
+// Get quota status
+$quotaStatus = $quotaService->getQuotaStatus((int)$user['id'], $currentPlan);
+
+// Get link stats
+$totalLinks = $shortLinkRepo->countByUserId((int)$user['id']);
+$activeLinks = count($shortLinkRepo->getActiveLinks((int)$user['id']));
+
+// Get total clicks (simplified - would need ClickRepository aggregation)
+$recentLinks = $shortLinkRepo->findByUserId((int)$user['id'], 5);
+
+$pageTitle = 'Dashboard';
+$navLinksLeft = [
+    ['label' => 'Dashboard', 'href' => '/dashboard'],
+    ['label' => 'Price', 'href' => '/pricing'],
+    ['label' => 'My Plan', 'href' => '/billing'],
+];
+$navLinksRight = [
+    ['label' => 'Logout', 'href' => '/logout'],
+];
+
+require __DIR__ . '/../views/partials/header.php';
+?>
+
+<section style="padding: 4rem 0;">
+    <div class="container" style="max-width: 800px;">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Welcome, <?= html($user['name'] ?? 'User') ?>!</h2>
+                    <p class="text-muted">Your Dashboard</p>
+                </div>
+                <span class="badge <?= $isPremium ? 'premium-badge' : 'free-badge' ?>">
+                    <?= $isPremium ? '💎 PREMIUM' : '⭐ FREE' ?>
+                </span>
+            </div>
+
+            <div style="padding: 1.5rem;">
+                <!-- Quota Status -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="card" style="padding: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">Enlaces Hoy</div>
+                        <div style="font-size: 2rem; font-weight: 700;">
+                            <?= $quotaStatus['daily_used'] ?>
+                            <?php if ($quotaStatus['daily_limit'] !== null): ?>
+                                / <?= $quotaStatus['daily_limit'] ?>
+                            <?php else: ?>
+                                <span style="font-size: 1rem; color: var(--color-text-muted);">(ilimitado)</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">Enlaces Este Mes</div>
+                        <div style="font-size: 2rem; font-weight: 700;">
+                            <?= $quotaStatus['monthly_used'] ?>
+                            <?php if ($quotaStatus['monthly_limit'] !== null): ?>
+                                / <?= $quotaStatus['monthly_limit'] ?>
+                            <?php else: ?>
+                                <span style="font-size: 1rem; color: var(--color-text-muted);">(ilimitado)</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">Enlaces Totales</div>
+                        <div style="font-size: 2rem; font-weight: 700;"><?= $totalLinks ?></div>
+                    </div>
+                    <div class="card" style="padding: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">Enlaces Activos</div>
+                        <div style="font-size: 2rem; font-weight: 700;"><?= $activeLinks ?></div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div style="margin-bottom: 2rem;">
+                    <a href="/create-link" class="btn btn-primary" style="margin-right: 1rem;">Crear Nuevo Enlace</a>
+                    <?php if ($isPremium || $isEnterprise): ?>
+                        <a href="/links" class="btn btn-outline">Gestionar Enlaces</a>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Recent Links -->
+                <?php if (!empty($recentLinks)): ?>
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3>Enlaces Recientes</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <?php foreach ($recentLinks as $link): ?>
+                                <div style="padding: 0.75rem; background: var(--color-bg-secondary, #1e293b); border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong><?= html($link['label'] ?: $link['short_code']) ?></strong><br>
+                                        <small style="color: var(--color-text-muted);">
+                                            <?= html($appConfig['base_url']) ?>/<?= html($link['short_code']) ?>
+                                        </small>
+                                    </div>
+                                    <a href="/link/<?= html($link['short_code']) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem;">Ver</a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Upgrade Prompt -->
+                <?php if (!$isPremium && !$isEnterprise): ?>
+                    <div class="alert alert-info">
+                        <strong>Actualiza a Premium</strong><br>
+                        Obtén más límites, códigos personalizados y funciones avanzadas.
+                        <a href="/pricing" class="btn btn-primary" style="margin-top: 1rem;">Ver Planes</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php require __DIR__ . '/../views/partials/footer.php'; ?>
+

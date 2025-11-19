@@ -1,0 +1,42 @@
+# Activar mod_rewrite
+RewriteEngine On
+RewriteBase /
+
+# --- Quitar .php de las URLs ---
+# Si el archivo existe con .php, servirlo sin mostrar la extensión
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# --- Link details route ---
+RewriteRule ^link/([a-zA-Z0-9_-]+)$ link-details.php?code=$1 [L,QSA]
+
+# --- Short code redirects ---
+# If not a file, directory, or known route, try redirect handler
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/(login|dashboard|profile|create-link|links|link|pricing|billing|logout|admin|stripe|qr|assets) [NC]
+RewriteRule ^([a-zA-Z0-9_-]+)$ redirect.php [L,QSA]
+
+# --- Evitar acceso directo a PHP internos ---
+RewriteRule ^(.*/)?\.ht.* - [F]
+
+# --- Seguridad básica ---
+<FilesMatch "\.(env|ini|log|cache|bak|sql)$">
+    Require all denied
+</FilesMatch>
+
+# Evitar listar directorios
+Options -Indexes
+
+# Forzar UTF-8
+AddDefaultCharset UTF-8
+
+# Bloquear acceso al .htaccess
+<Files ".htaccess">
+    Require all granted
+</Files>
+
+# --- Forzar HTTPS si lo necesitas ---
+# Descomenta si deseas forzarlo
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

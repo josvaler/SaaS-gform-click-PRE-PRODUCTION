@@ -1,0 +1,20 @@
+{
+    "name": "your-app/template",
+    "description": "PHP Application Template with Google OAuth and Stripe Subscriptions",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "google/apiclient": "^2.15",
+        "stripe/stripe-php": "^18.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": ""
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
+
