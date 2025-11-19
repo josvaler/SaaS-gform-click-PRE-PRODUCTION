@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate CSRF token
     $csrfToken = $_POST['csrf_token'] ?? '';
     if (!validate_csrf_token($csrfToken)) {
-        $error = 'Token de seguridad inválido. Por favor, intenta de nuevo.';
+        $error = t('error.invalid_csrf');
     } else {
         $originalUrl = trim($_POST['original_url'] ?? '');
         $customCode = trim($_POST['custom_code'] ?? '');
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 } else {
                     if (!empty($customCode)) {
-                        $error = 'Los códigos personalizados solo están disponibles para usuarios PREMIUM o ENTERPRISE.';
+                        $error = t('link.custom_code_premium_only');
                     } else {
                         $shortCode = $shortCodeService->generateRandomCode();
                     }
@@ -77,10 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!empty($expirationDate) && ($isPremium || $isEnterprise)) {
                         $expiresAt = date('Y-m-d H:i:s', strtotime($expirationDate));
                         if ($expiresAt === false || strtotime($expiresAt) < time()) {
-                            $error = 'La fecha de expiración debe ser en el futuro.';
+                            $error = t('link.expiration_future');
                         }
                     } elseif (!empty($expirationDate)) {
-                        $error = 'Las fechas de expiración solo están disponibles para usuarios PREMIUM o ENTERPRISE.';
+                        $error = t('link.expiration_premium_only');
                     }
                     
                     if (!$error) {
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             redirect('/link/' . $shortCode);
                         } catch (\Throwable $e) {
                             error_log('Link creation error: ' . $e->getMessage());
-                            $error = 'Error al crear el enlace. Por favor, intenta de nuevo.';
+                            $error = t('link.create_error');
                         }
                     }
                 }
@@ -115,13 +115,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = 'Crear Enlace';
+$pageTitle = t('link.create');
 $navLinksLeft = [
-    ['label' => 'Dashboard', 'href' => '/dashboard'],
-    ['label' => 'Precios', 'href' => '/pricing'],
+    ['label' => t('nav.dashboard'), 'href' => '/dashboard'],
+    ['label' => t('nav.pricing'), 'href' => '/pricing'],
 ];
 $navLinksRight = [
-    ['label' => 'Logout', 'href' => '/logout'],
+    ['label' => t('nav.logout'), 'href' => '/logout'],
 ];
 
 require __DIR__ . '/../views/partials/header.php';
@@ -132,8 +132,8 @@ require __DIR__ . '/../views/partials/header.php';
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h2>Crear Enlace Corto</h2>
-                    <p class="text-muted">Acorta tu enlace de Google Forms</p>
+                    <h2><?= t('link.create_short') ?></h2>
+                    <p class="text-muted"><?= t('link.shorten_description') ?></p>
                 </div>
             </div>
 
@@ -150,7 +150,7 @@ require __DIR__ . '/../views/partials/header.php';
 
                 <div style="margin-bottom: 1.5rem;">
                     <label for="original_url" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                        URL de Google Forms *
+                        <?= t('link.original_url') ?> *
                     </label>
                     <input 
                         type="url" 
@@ -162,19 +162,19 @@ require __DIR__ . '/../views/partials/header.php';
                         value="<?= html($_POST['original_url'] ?? '') ?>"
                     >
                     <small style="color: var(--color-text-muted); display: block; margin-top: 0.5rem;">
-                        Solo se permiten URLs de Google Forms (docs.google.com/forms/ o forms.gle/)
+                        <?= t('link.original_url_required') ?>
                     </small>
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
                     <label for="label" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                        Etiqueta (opcional)
+                        <?= t('link.label') ?>
                     </label>
                     <input 
                         type="text" 
                         id="label" 
                         name="label" 
-                        placeholder="Mi formulario de registro"
+                        placeholder="<?= t('link.label_placeholder') ?>"
                         style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border, #334155); background: var(--color-bg, #0f172a); color: var(--color-text, #f1f5f9);"
                         value="<?= html($_POST['label'] ?? '') ?>"
                     >
@@ -183,25 +183,25 @@ require __DIR__ . '/../views/partials/header.php';
                 <?php if ($isPremium || $isEnterprise): ?>
                     <div style="margin-bottom: 1.5rem;">
                         <label for="custom_code" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                            Código Personalizado (opcional)
+                            <?= t('link.custom_code') ?>
                         </label>
                         <input 
                             type="text" 
                             id="custom_code" 
                             name="custom_code" 
-                            placeholder="mi-formulario"
+                            placeholder="<?= t('link.custom_code_placeholder') ?>"
                             pattern="[a-zA-Z0-9_-]+"
                             style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border, #334155); background: var(--color-bg, #0f172a); color: var(--color-text, #f1f5f9);"
                             value="<?= html($_POST['custom_code'] ?? '') ?>"
                         >
                         <small style="color: var(--color-text-muted); display: block; margin-top: 0.5rem;">
-                            Solo letras, números, guiones y guiones bajos. Mínimo 3 caracteres.
+                            <?= t('link.custom_code_premium_only') ?>
                         </small>
                     </div>
 
                     <div style="margin-bottom: 1.5rem;">
                         <label for="expiration_date" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                            Fecha de Expiración (opcional)
+                            <?= t('link.expiration_date') ?>
                         </label>
                         <input 
                             type="datetime-local" 
@@ -214,7 +214,7 @@ require __DIR__ . '/../views/partials/header.php';
                 <?php endif; ?>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    Crear Enlace
+                    <?= t('link.submit') ?>
                 </button>
             </form>
         </div>

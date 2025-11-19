@@ -7,18 +7,18 @@ $user = session_user();
 $currentPlan = $user ? ($user['plan'] ?? 'FREE') : 'FREE';
 $isLoggedIn = $user !== null;
 
-$pageTitle = 'Precios';
+$pageTitle = t('pricing.title');
 $navLinksLeft = [
-    ['label' => 'Inicio', 'href' => '/'],
+    ['label' => t('nav.home'), 'href' => '/'],
 ];
 $navLinksRight = $isLoggedIn
     ? [
-        ['label' => 'Dashboard', 'href' => '/dashboard'],
-        ['label' => 'Mi Plan', 'href' => '/billing'],
-        ['label' => 'Logout', 'href' => '/logout'],
+        ['label' => t('nav.dashboard'), 'href' => '/dashboard'],
+        ['label' => t('nav.my_plan'), 'href' => '/billing'],
+        ['label' => t('nav.logout'), 'href' => '/logout'],
     ]
     : [
-        ['label' => 'Login', 'href' => '/login'],
+        ['label' => t('nav.login'), 'href' => '/login'],
     ];
 
 require __DIR__ . '/../views/partials/header.php';
@@ -27,8 +27,8 @@ require __DIR__ . '/../views/partials/header.php';
 <section style="padding: 4rem 0;">
     <div class="container" style="max-width: 1200px;">
         <div style="text-align: center; margin-bottom: 3rem;">
-            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Elige tu Plan</h1>
-            <p style="font-size: 1.25rem; color: var(--color-text-muted);">Planes diseñados para todas tus necesidades</p>
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;"><?= t('pricing.choose_plan') ?></h1>
+            <p style="font-size: 1.25rem; color: var(--color-text-muted);"><?= t('pricing.subtitle') ?></p>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
@@ -36,27 +36,27 @@ require __DIR__ . '/../views/partials/header.php';
             <div class="card" style="<?= $currentPlan === 'FREE' ? 'border: 2px solid #60a5fa;' : '' ?>">
                 <div class="card-header">
                     <div>
-                        <h2>FREE</h2>
-                        <p class="text-muted">Para empezar</p>
+                        <h2><?= t('pricing.free') ?></h2>
+                        <p class="text-muted"><?= t('pricing.free_subtitle') ?></p>
                     </div>
-                    <span class="badge free-badge">Gratis</span>
+                    <span class="badge free-badge"><?= t('pricing.free_badge') ?></span>
                 </div>
                 <div style="padding: 1.5rem;">
                     <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
-                        $0<span style="font-size: 1rem; color: var(--color-text-muted);">/mes</span>
+                        $0<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
                     </div>
                     <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
-                        <li style="padding: 0.5rem 0;">✓ 10 enlaces por día</li>
-                        <li style="padding: 0.5rem 0;">✓ 200 enlaces por mes</li>
-                        <li style="padding: 0.5rem 0;">✓ Códigos aleatorios</li>
-                        <li style="padding: 0.5rem 0;">✓ Estadísticas básicas</li>
-                        <li style="padding: 0.5rem 0;">✗ Sin códigos personalizados</li>
-                        <li style="padding: 0.5rem 0;">✗ Sin fechas de expiración</li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_links_per_day') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_links_per_month') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_random_codes') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_basic_stats') ?></li>
+                        <li style="padding: 0.5rem 0;">✗ <?= t('pricing.feature_no_custom_codes') ?></li>
+                        <li style="padding: 0.5rem 0;">✗ <?= t('pricing.feature_no_expiration') ?></li>
                     </ul>
                     <?php if ($currentPlan === 'FREE'): ?>
-                        <div class="alert alert-info">Plan Actual</div>
+                        <div class="alert alert-info"><?= t('pricing.current_plan') ?></div>
                     <?php else: ?>
-                        <a href="/login" class="btn btn-outline" style="width: 100%;">Empezar Gratis</a>
+                        <a href="/login" class="btn btn-outline" style="width: 100%;"><?= t('pricing.start_free') ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -65,32 +65,32 @@ require __DIR__ . '/../views/partials/header.php';
             <div class="card" style="<?= $currentPlan === 'PREMIUM' ? 'border: 2px solid #22d3ee;' : '' ?>">
                 <div class="card-header">
                     <div>
-                        <h2>PREMIUM</h2>
-                        <p class="text-muted">Para profesionales</p>
+                        <h2><?= t('pricing.premium') ?></h2>
+                        <p class="text-muted"><?= t('pricing.premium_subtitle') ?></p>
                     </div>
-                    <span class="badge premium-badge">Popular</span>
+                    <span class="badge premium-badge"><?= t('pricing.premium_badge') ?></span>
                 </div>
                 <div style="padding: 1.5rem;">
                     <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
-                        $4.99<span style="font-size: 1rem; color: var(--color-text-muted);">/mes</span>
+                        $4.99<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
                     </div>
                     <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
-                        <li style="padding: 0.5rem 0;">✓ 600 enlaces por mes</li>
-                        <li style="padding: 0.5rem 0;">✓ Sin límite diario</li>
-                        <li style="padding: 0.5rem 0;">✓ Códigos personalizados</li>
-                        <li style="padding: 0.5rem 0;">✓ Fechas de expiración</li>
-                        <li style="padding: 0.5rem 0;">✓ Estadísticas avanzadas</li>
-                        <li style="padding: 0.5rem 0;">✓ Gestión de enlaces</li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_600_links_month') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_no_daily_limit') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_custom_codes') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_expiration') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_advanced_stats') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_link_management') ?></li>
                     </ul>
                     <?php if ($currentPlan === 'PREMIUM'): ?>
-                        <div class="alert alert-success">Plan Actual</div>
+                        <div class="alert alert-success"><?= t('pricing.current_plan') ?></div>
                     <?php elseif ($isLoggedIn): ?>
                         <form action="/stripe/checkout" method="POST" style="margin: 0;">
                             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">Actualizar a Premium</button>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;"><?= t('pricing.upgrade_premium') ?></button>
                         </form>
                     <?php else: ?>
-                        <a href="/login" class="btn btn-primary" style="width: 100%;">Comenzar Premium</a>
+                        <a href="/login" class="btn btn-primary" style="width: 100%;"><?= t('pricing.start_premium') ?></a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -99,27 +99,27 @@ require __DIR__ . '/../views/partials/header.php';
             <div class="card" style="<?= $currentPlan === 'ENTERPRISE' ? 'border: 2px solid #a78bfa;' : '' ?>">
                 <div class="card-header">
                     <div>
-                        <h2>ENTERPRISE</h2>
-                        <p class="text-muted">Para empresas</p>
+                        <h2><?= t('pricing.enterprise') ?></h2>
+                        <p class="text-muted"><?= t('pricing.enterprise_subtitle') ?></p>
                     </div>
-                    <span class="badge enterprise-badge">Enterprise</span>
+                    <span class="badge enterprise-badge"><?= t('pricing.enterprise_badge') ?></span>
                 </div>
                 <div style="padding: 1.5rem;">
                     <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
-                        <span style="font-size: 1rem; color: var(--color-text-muted);">A medida</span>
+                        <span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.custom') ?></span>
                     </div>
                     <ul style="list-style: none; padding: 0; margin-bottom: 2rem;">
-                        <li style="padding: 0.5rem 0;">✓ Enlaces ilimitados</li>
-                        <li style="padding: 0.5rem 0;">✓ Sin límites</li>
-                        <li style="padding: 0.5rem 0;">✓ Todas las funciones</li>
-                        <li style="padding: 0.5rem 0;">✓ Soporte prioritario</li>
-                        <li style="padding: 0.5rem 0;">✓ Dominios personalizados</li>
-                        <li style="padding: 0.5rem 0;">✓ Facturación empresarial</li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_unlimited_links') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_no_limits') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_all_features') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_priority_support') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_custom_domains') ?></li>
+                        <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_enterprise_billing') ?></li>
                     </ul>
                     <?php if ($currentPlan === 'ENTERPRISE'): ?>
-                        <div class="alert alert-success">Plan Actual</div>
+                        <div class="alert alert-success"><?= t('pricing.current_plan') ?></div>
                     <?php else: ?>
-                        <a href="mailto:support@gformus.link?subject=Solicitud Enterprise" class="btn btn-outline" style="width: 100%;">Contactar Ventas</a>
+                        <a href="mailto:support@gformus.link?subject=Solicitud Enterprise" class="btn btn-outline" style="width: 100%;"><?= t('pricing.contact_sales') ?></a>
                     <?php endif; ?>
                 </div>
             </div>

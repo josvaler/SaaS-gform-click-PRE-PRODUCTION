@@ -55,13 +55,13 @@ if ($status !== 'all') {
 
 $totalPages = ceil($totalLinks / $perPage);
 
-$pageTitle = 'Gestionar Enlaces';
+$pageTitle = t('links.manage');
 $navLinksLeft = [
-    ['label' => 'Dashboard', 'href' => '/dashboard'],
-    ['label' => 'Crear Enlace', 'href' => '/create-link'],
+    ['label' => t('nav.dashboard'), 'href' => '/dashboard'],
+    ['label' => t('nav.create_link'), 'href' => '/create-link'],
 ];
 $navLinksRight = [
-    ['label' => 'Logout', 'href' => '/logout'],
+    ['label' => t('nav.logout'), 'href' => '/logout'],
 ];
 
 require __DIR__ . '/../views/partials/header.php';
@@ -72,8 +72,8 @@ require __DIR__ . '/../views/partials/header.php';
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h2>Gestionar Enlaces</h2>
-                    <p class="text-muted">Administra todos tus enlaces cortos</p>
+                    <h2><?= t('links.manage') ?></h2>
+                    <p class="text-muted"><?= t('links.manage_subtitle') ?></p>
                 </div>
             </div>
 
@@ -81,29 +81,29 @@ require __DIR__ . '/../views/partials/header.php';
             <div style="padding: 1.5rem; border-bottom: 1px solid var(--color-border, #334155);">
                 <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Buscar</label>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;"><?= t('common.search') ?></label>
                         <input 
                             type="text" 
                             name="search" 
-                            placeholder="Etiqueta o URL..."
+                            placeholder="<?= t('links.label') ?> <?= t('common.of') ?> <?= t('links.original_url') ?>..."
                             value="<?= html($search) ?>"
                             style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border, #334155); background: var(--color-bg, #0f172a); color: var(--color-text, #f1f5f9);"
                         >
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Estado</label>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;"><?= t('links.status') ?></label>
                         <select 
                             name="status" 
                             style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border, #334155); background: var(--color-bg, #0f172a); color: var(--color-text, #f1f5f9);"
                         >
-                            <option value="all" <?= $status === 'all' ? 'selected' : '' ?>>Todos</option>
-                            <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Activos</option>
-                            <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inactivos</option>
-                            <option value="expired" <?= $status === 'expired' ? 'selected' : '' ?>>Expirados</option>
+                            <option value="all" <?= $status === 'all' ? 'selected' : '' ?>><?= t('links.filter_all') ?></option>
+                            <option value="active" <?= $status === 'active' ? 'selected' : '' ?>><?= t('links.filter_active') ?></option>
+                            <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>><?= t('links.filter_inactive') ?></option>
+                            <option value="expired" <?= $status === 'expired' ? 'selected' : '' ?>><?= t('links.filter_expired') ?></option>
                         </select>
                     </div>
                     <div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Filtrar</button>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;"><?= t('common.filter') ?></button>
                     </div>
                 </form>
             </div>
@@ -112,19 +112,19 @@ require __DIR__ . '/../views/partials/header.php';
             <div style="padding: 1.5rem;">
                 <?php if (empty($links)): ?>
                     <div class="alert alert-info">
-                        No se encontraron enlaces. <a href="/create-link">Crea tu primer enlace</a>
+                        <?= t('links.no_links') ?> <a href="/create-link"><?= t('links.create_first') ?></a>
                     </div>
                 <?php else: ?>
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--color-border, #334155);">
-                                    <th style="padding: 0.75rem; text-align: left;">Etiqueta</th>
-                                    <th style="padding: 0.75rem; text-align: left;">Código</th>
-                                    <th style="padding: 0.75rem; text-align: left;">URL Original</th>
-                                    <th style="padding: 0.75rem; text-align: left;">Estado</th>
-                                    <th style="padding: 0.75rem; text-align: left;">Creado</th>
-                                    <th style="padding: 0.75rem; text-align: left;">Acciones</th>
+                                    <th style="padding: 0.75rem; text-align: left;"><?= t('links.label') ?></th>
+                                    <th style="padding: 0.75rem; text-align: left;"><?= t('links.code') ?></th>
+                                    <th style="padding: 0.75rem; text-align: left;"><?= t('links.original_url') ?></th>
+                                    <th style="padding: 0.75rem; text-align: left;"><?= t('links.status') ?></th>
+                                    <th style="padding: 0.75rem; text-align: left;"><?= t('links.created') ?></th>
+                                    <th style="padding: 0.75rem; text-align: left;"><?= t('links.actions') ?></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -148,14 +148,14 @@ require __DIR__ . '/../views/partials/header.php';
                                             $isActive = $link['is_active'] == 1 && !$isExpired;
                                             ?>
                                             <span class="badge <?= $isActive ? 'premium-badge' : 'free-badge' ?>">
-                                                <?= $isExpired ? 'Expirado' : ($link['is_active'] == 1 ? 'Activo' : 'Inactivo') ?>
+                                                <?= $isExpired ? t('common.expired') : ($link['is_active'] == 1 ? t('common.active') : t('common.inactive')) ?>
                                             </span>
                                         </td>
                                         <td style="padding: 0.75rem;"><?= !empty($link['created_at']) ? date('d/m/Y', strtotime($link['created_at'])) : '-' ?></td>
                                         <td style="padding: 0.75rem;">
                                             <?php $code = $link['short_code'] ?? ''; ?>
                                             <?php if ($code): ?>
-                                                <a href="/link/<?= html($code) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem; margin-right: 0.5rem;">Ver</a>
+                                                <a href="/link/<?= html($code) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem; margin-right: 0.5rem;"><?= t('common.view') ?></a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -168,11 +168,11 @@ require __DIR__ . '/../views/partials/header.php';
                     <?php if ($totalPages > 1): ?>
                         <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem;">
                             <?php if ($page > 1): ?>
-                                <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>&status=<?= html($status) ?>" class="btn btn-outline">Anterior</a>
+                                <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>&status=<?= html($status) ?>" class="btn btn-outline"><?= t('common.previous') ?></a>
                             <?php endif; ?>
-                            <span style="padding: 0.5rem 1rem; display: inline-block;">Página <?= $page ?> de <?= $totalPages ?></span>
+                            <span style="padding: 0.5rem 1rem; display: inline-block;"><?= t('common.page') ?> <?= $page ?> <?= t('common.of') ?> <?= $totalPages ?></span>
                             <?php if ($page < $totalPages): ?>
-                                <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>&status=<?= html($status) ?>" class="btn btn-outline">Siguiente</a>
+                                <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>&status=<?= html($status) ?>" class="btn btn-outline"><?= t('common.next') ?></a>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>

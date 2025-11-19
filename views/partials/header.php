@@ -29,7 +29,7 @@ $isEnterprise = $userPlan === 'ENTERPRISE';
 $showAds = $currentUser && $userPlan === 'FREE';
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= current_lang() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,45 +39,127 @@ $showAds = $currentUser && $userPlan === 'FREE';
 </head>
 <body>
     <header class="navbar" role="banner">
-        <div class="logo">
-            <a href="/" class="badge" aria-label="Home">
-                <span>✨</span>
-                <span><?= html($appConfig['name']) ?></span>
-            </a>
-        </div>
-        <nav class="nav-links" aria-label="Main navigation">
-            <?php foreach ($navLinksLeft as $link): ?>
-                <a href="<?= html($link['href']) ?>" <?= $isActive($link['href']) ? 'class="active" aria-current="page"' : '' ?>>
-                    <?= html($link['label']) ?>
+        <div class="navbar-container">
+            <div class="logo">
+                <a href="/" class="badge" aria-label="Home">
+                    <span>✨</span>
+                    <span><?= html($appConfig['name']) ?></span>
                 </a>
-            <?php endforeach; ?>
-        </nav>
-        <nav class="nav-links" aria-label="User navigation">
-            <?php foreach ($navLinksRight as $link): ?>
-                <a href="<?= html($link['href']) ?>" <?= $isActive($link['href']) ? 'class="active" aria-current="page"' : '' ?>>
-                    <?= html($link['label']) ?>
-                </a>
-            <?php endforeach; ?>
+            </div>
             
-            <?php if ($currentUser): ?>
-                <div class="user-profile <?= $isPremium ? 'premium' : ($isEnterprise ? 'enterprise' : 'free') ?>">
-                    <?php if ($userAvatar): ?>
-                        <div class="user-avatar-wrapper">
-                            <img src="<?= html($userAvatar) ?>" alt="<?= html($userName) ?>" class="user-avatar">
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-links nav-desktop" aria-label="Main navigation">
+                <?php foreach ($navLinksLeft as $link): ?>
+                    <a href="<?= html($link['href']) ?>" class="nav-link <?= $isActive($link['href']) ? 'active' : '' ?>" <?= $isActive($link['href']) ? 'aria-current="page"' : '' ?>>
+                        <?= html($link['label']) ?>
+                    </a>
+                <?php endforeach; ?>
+                
+                <!-- Language Selector -->
+                <div class="language-selector">
+                    <form method="POST" action="/set-language">
+                        <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+                        <select name="lang" onchange="this.form.submit()" title="<?= t('lang.select') ?>">
+                            <option value="es" <?= current_lang() === 'es' ? 'selected' : '' ?>><?= t('lang.spanish') ?></option>
+                            <option value="en" <?= current_lang() === 'en' ? 'selected' : '' ?>><?= t('lang.english') ?></option>
+                        </select>
+                    </form>
+                </div>
+                
+                <?php if ($currentUser): ?>
+                    <!-- Compact User Profile with Dropdown -->
+                    <div class="user-profile-compact">
+                        <button class="user-profile-trigger" aria-label="User menu" aria-expanded="false">
+                            <?php if ($userAvatar): ?>
+                                <img src="<?= html($userAvatar) ?>" alt="<?= html($userName) ?>" class="user-avatar-compact">
+                            <?php else: ?>
+                                <div class="user-avatar-placeholder"><?= strtoupper(substr($userName, 0, 1)) ?></div>
+                            <?php endif; ?>
+                            <span class="plan-badge-compact <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
+                                <?= $isEnterprise ? '🏢' : ($isPremium ? '💎' : '⭐') ?>
+                            </span>
+                        </button>
+                        <div class="user-dropdown">
+                            <div class="user-dropdown-header">
+                                <div class="user-dropdown-avatar">
+                                    <?php if ($userAvatar): ?>
+                                        <img src="<?= html($userAvatar) ?>" alt="<?= html($userName) ?>">
+                                    <?php else: ?>
+                                        <div class="user-avatar-placeholder"><?= strtoupper(substr($userName, 0, 1)) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="user-dropdown-info">
+                                    <div class="user-dropdown-name"><?= html($userName) ?></div>
+                                    <div class="user-dropdown-email"><?= html($userEmail) ?></div>
+                                    <div class="user-dropdown-plan <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
+                                        <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="user-dropdown-menu">
+                                <?php foreach ($navLinksRight as $link): ?>
+                                    <a href="<?= html($link['href']) ?>" class="user-dropdown-item <?= $isActive($link['href']) ? 'active' : '' ?>">
+                                        <?= html($link['label']) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                                <a href="/profile" class="user-dropdown-item"><?= t('nav.profile') ?></a>
+                            </div>
                         </div>
+                    </div>
+                <?php else: ?>
+                    <!-- Login link for non-logged users -->
+                    <a href="/login" class="nav-link"><?= t('nav.login') ?></a>
+                <?php endif; ?>
+            </nav>
+            
+            <!-- Mobile Navigation -->
+            <nav class="nav-mobile" aria-label="Mobile navigation">
+                <div class="mobile-menu-content">
+                    <?php foreach ($navLinksLeft as $link): ?>
+                        <a href="<?= html($link['href']) ?>" class="mobile-nav-link <?= $isActive($link['href']) ? 'active' : '' ?>">
+                            <?= html($link['label']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                    
+                    <?php if ($currentUser): ?>
+                        <?php foreach ($navLinksRight as $link): ?>
+                            <a href="<?= html($link['href']) ?>" class="mobile-nav-link <?= $isActive($link['href']) ? 'active' : '' ?>">
+                                <?= html($link['label']) ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <a href="/profile" class="mobile-nav-link"><?= t('nav.profile') ?></a>
+                        <div class="mobile-user-info">
+                            <div class="mobile-user-name"><?= html($userName) ?></div>
+                            <div class="mobile-user-email"><?= html($userEmail) ?></div>
+                            <div class="mobile-user-plan <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
+                                <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <a href="/login" class="mobile-nav-link"><?= t('nav.login') ?></a>
                     <?php endif; ?>
-                    <div class="user-info">
-                        <span class="user-name"><?= html($userName) ?></span>
-                        <?php if ($userEmail): ?>
-                            <span class="user-email" style="font-size: 0.85rem; color: var(--color-text-muted); display: block;"><?= html($userEmail) ?></span>
-                        <?php endif; ?>
-                        <span class="plan-badge <?= $isPremium ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : 'free-badge') ?>">
-                            <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
-                        </span>
+                    
+                    <!-- Mobile Language Selector -->
+                    <div class="mobile-language-selector">
+                        <form method="POST" action="/set-language">
+                            <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
+                            <label><?= t('lang.select') ?>:</label>
+                            <select name="lang" onchange="this.form.submit()">
+                                <option value="es" <?= current_lang() === 'es' ? 'selected' : '' ?>><?= t('lang.spanish') ?></option>
+                                <option value="en" <?= current_lang() === 'en' ? 'selected' : '' ?>><?= t('lang.english') ?></option>
+                            </select>
+                        </form>
                     </div>
                 </div>
-            <?php endif; ?>
-        </nav>
+            </nav>
+        </div>
     </header>
     <main>
 

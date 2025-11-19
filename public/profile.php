@@ -75,11 +75,11 @@ $countries = [
 
 $pageTitle = 'Mi Perfil';
 $navLinksLeft = [
-    ['label' => 'Dashboard', 'href' => '/dashboard'],
-    ['label' => 'Mi Plan', 'href' => '/billing'],
+    ['label' => t('nav.dashboard'), 'href' => '/dashboard'],
+    ['label' => t('nav.my_plan'), 'href' => '/billing'],
 ];
 $navLinksRight = [
-    ['label' => 'Logout', 'href' => '/logout'],
+    ['label' => t('nav.logout'), 'href' => '/logout'],
 ];
 
 require __DIR__ . '/../views/partials/header.php';

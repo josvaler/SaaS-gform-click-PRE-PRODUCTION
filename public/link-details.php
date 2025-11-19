@@ -52,11 +52,11 @@ if (!empty($link['id'])) {
 
 $pageTitle = 'Detalles del Enlace';
 $navLinksLeft = [
-    ['label' => 'Dashboard', 'href' => '/dashboard'],
-    ['label' => 'Enlaces', 'href' => '/links'],
+    ['label' => t('nav.dashboard'), 'href' => '/dashboard'],
+    ['label' => t('nav.links'), 'href' => '/links'],
 ];
 $navLinksRight = [
-    ['label' => 'Logout', 'href' => '/logout'],
+    ['label' => t('nav.logout'), 'href' => '/logout'],
 ];
 
 // Store link data before header.php (header.php uses $link in foreach loops which overwrites it)

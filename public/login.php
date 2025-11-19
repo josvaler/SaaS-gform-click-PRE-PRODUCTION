@@ -13,8 +13,8 @@ if (session_user()) {
 
 $pageTitle = 'Login with Google';
 $navLinksLeft = [
-    ['label' => 'Back to Landing', 'href' => '/'],
-    ['label' => 'Price', 'href' => '/price'],
+    ['label' => t('nav.home'), 'href' => '/'],
+    ['label' => t('nav.pricing'), 'href' => '/pricing'],
 ];
 
 $authError = null;
@@ -199,6 +199,10 @@ if ($googleSdkAvailable) {
                             }
 
                             unset($_SESSION['oauth_state']);
+                            
+                            // Mark that user has logged in (for cookie banner check)
+                            $_SESSION['first_login'] = true;
+                            
                             session_write_close();
                             
                             redirect('/dashboard');

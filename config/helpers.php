@@ -103,3 +103,73 @@ function html(?string $text): string
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Translation function - returns translated string based on current language
+ * @param string $key Translation key (e.g., 'dashboard.title')
+ * @param array $params Parameters to replace in string (e.g., ['name' => 'John'])
+ * @return string Translated string
+ */
+function t(string $key, array $params = []): string
+{
+    static $translations = null;
+    static $currentLang = null;
+    
+    // Get current language from session or user preference
+    if ($currentLang === null) {
+        $user = session_user();
+        $currentLang = $_SESSION['lang'] ?? null;
+        
+        // If not in session, try user's locale from database
+        if ($currentLang === null && $user) {
+            $currentLang = $user['locale'] ?? null;
+        }
+        
+        // Normalize locale: 'es_ES' -> 'es', 'en_US' -> 'en'
+        if ($currentLang) {
+            $currentLang = strtolower(substr($currentLang, 0, 2));
+        }
+        
+        // Default to Spanish if not set or invalid
+        if (!in_array($currentLang, ['en', 'es'])) {
+            $currentLang = 'es'; // Spanish is default
+        }
+        
+        // Store in session for performance
+        $_SESSION['lang'] = $currentLang;
+    }
+    
+    // Load translations if not loaded
+    if ($translations === null) {
+        $transFile = __DIR__ . "/translations/{$currentLang}.php";
+        if (file_exists($transFile)) {
+            $translations = require $transFile;
+        } else {
+            // Fallback to Spanish if translation file doesn't exist
+            $transFile = __DIR__ . "/translations/es.php";
+            $translations = file_exists($transFile) ? require $transFile : [];
+        }
+    }
+    
+    // Get translation or return key if not found
+    $text = $translations[$key] ?? $key;
+    
+    // Replace parameters: t('welcome', ['name' => 'John']) -> "Welcome, John!"
+    foreach ($params as $param => $value) {
+        $text = str_replace(":{$param}", html($value), $text);
+    }
+    
+    return $text;
+}
+
+/**
+ * Get current language code
+ * @return string Current language ('es' or 'en')
+ */
+function current_lang(): string
+{
+    $user = session_user();
+    $lang = $_SESSION['lang'] ?? $user['locale'] ?? 'es';
+    $lang = strtolower(substr($lang, 0, 2));
+    return in_array($lang, ['en', 'es']) ? $lang : 'es';
+}
+
