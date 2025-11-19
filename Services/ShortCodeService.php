@@ -41,14 +41,16 @@ class ShortCodeService
         if (strlen($code) < 3) {
             return [
                 'valid' => false,
+                'error_key' => 'link.custom_code_min_length',
                 'error' => 'El código personalizado debe tener al menos 3 caracteres.'
             ];
         }
         
-        if (strlen($code) > 50) {
+        if (strlen($code) > 12) {
             return [
                 'valid' => false,
-                'error' => 'El código personalizado no puede tener más de 50 caracteres.'
+                'error_key' => 'link.custom_code_max_length',
+                'error' => 'El código personalizado no puede tener más de 12 caracteres.'
             ];
         }
 
@@ -56,6 +58,7 @@ class ShortCodeService
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $code)) {
             return [
                 'valid' => false,
+                'error_key' => 'link.custom_code_invalid_format',
                 'error' => 'El código personalizado solo puede contener letras, números, guiones y guiones bajos.'
             ];
         }
@@ -65,6 +68,7 @@ class ShortCodeService
         if (in_array(strtolower($code), $reserved)) {
             return [
                 'valid' => false,
+                'error_key' => 'link.custom_code_reserved',
                 'error' => 'Este código está reservado y no está disponible.'
             ];
         }
@@ -73,6 +77,7 @@ class ShortCodeService
         if (!$this->shortLinkRepo->isShortCodeUnique($code)) {
             return [
                 'valid' => false,
+                'error_key' => 'link.custom_code_taken',
                 'error' => 'Este código ya está en uso. Por favor, elige otro.'
             ];
         }

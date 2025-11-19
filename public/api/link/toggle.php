@@ -49,6 +49,19 @@ if (!$link || (int)$link['user_id'] !== (int)$user['id']) {
 
 // Toggle status
 $newStatus = $link['is_active'] == 1 ? 0 : 1;
+
+// If activating, check if another active link with the same short code exists
+if ($newStatus == 1) {
+    if ($shortLinkRepo->hasActiveLinkWithCode($link['short_code'], $linkId)) {
+        http_response_code(409); // Conflict
+        echo json_encode([
+            'success' => false,
+            'message' => t('link.activation_conflict')
+        ]);
+        exit;
+    }
+}
+
 $shortLinkRepo->update($linkId, ['is_active' => $newStatus]);
 
 echo json_encode([

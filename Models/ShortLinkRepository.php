@@ -284,5 +284,20 @@ class ShortLinkRepository
         $statement->execute($params);
         return (int)$statement->fetchColumn() === 0;
     }
+
+    public function hasActiveLinkWithCode(string $shortCode, ?int $excludeId = null): bool
+    {
+        $sql = 'SELECT COUNT(*) FROM short_links WHERE short_code = :short_code AND is_active = 1';
+        $params = ['short_code' => $shortCode];
+        
+        if ($excludeId !== null) {
+            $sql .= ' AND id != :exclude_id';
+            $params['exclude_id'] = $excludeId;
+        }
+        
+        $statement = $this->db->prepare($sql);
+        $statement->execute($params);
+        return (int)$statement->fetchColumn() > 0;
+    }
 }
 

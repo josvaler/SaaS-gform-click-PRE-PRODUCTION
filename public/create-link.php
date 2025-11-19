@@ -59,7 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($customCode) && ($isPremium || $isEnterprise)) {
                     $codeValidation = $shortCodeService->validateCustomCode($customCode);
                     if (!$codeValidation['valid']) {
-                        $error = $codeValidation['error'];
+                        // Use translation key if available, otherwise use error message
+                        $error = isset($codeValidation['error_key']) 
+                            ? t($codeValidation['error_key']) 
+                            : $codeValidation['error'];
                     } else {
                         $shortCode = $codeValidation['sanitized'];
                     }
@@ -75,9 +78,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Validate expiration date
                     $expiresAt = null;
                     if (!empty($expirationDate) && ($isPremium || $isEnterprise)) {
-                        $expiresAt = date('Y-m-d H:i:s', strtotime($expirationDate));
-                        if ($expiresAt === false || strtotime($expiresAt) < time()) {
-                            $error = t('link.expiration_future');
+                        // Parse MM/DD/YYYY HH:MM format
+                        $parsedDate = null;
+                        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/', $expirationDate, $matches)) {
+                            $month = (int)$matches[1];
+                            $day = (int)$matches[2];
+                            $year = (int)$matches[3];
+                            $hour = (int)$matches[4];
+                            $minute = (int)$matches[5];
+                            
+                            if (checkdate($month, $day, $year) && $hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59) {
+                                $parsedDate = sprintf('%04d-%02d-%02d %02d:%02d:00', $year, $month, $day, $hour, $minute);
+                            }
+                        }
+                        
+                        if ($parsedDate === null) {
+                            $error = t('link.expiration_invalid_format');
+                        } else {
+                            $expiresAt = $parsedDate;
+                            if (strtotime($expiresAt) < time()) {
+                                $error = t('link.expiration_future');
+                            }
                         }
                     } elseif (!empty($expirationDate)) {
                         $error = t('link.expiration_premium_only');
@@ -113,6 +134,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+}
+
+// Generate default random code for Premium/Enterprise users
+$defaultCustomCode = '';
+if ($isPremium || $isEnterprise) {
+    $defaultCustomCode = $shortCodeService->generateRandomCode(6);
+}
+
+// Generate default expiration date (today + 7 days) for Premium/Enterprise users
+$defaultExpirationDate = '';
+if ($isPremium || $isEnterprise) {
+    $futureDate = new DateTime('+7 days');
+    $defaultExpirationDate = $futureDate->format('m/d/Y H:i');
 }
 
 $pageTitle = t('link.create');
@@ -191,8 +225,9 @@ require __DIR__ . '/../views/partials/header.php';
                             name="custom_code" 
                             placeholder="<?= t('link.custom_code_placeholder') ?>"
                             pattern="[a-zA-Z0-9_-]+"
+                            maxlength="12"
                             style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border, #334155); background: var(--color-bg, #0f172a); color: var(--color-text, #f1f5f9);"
-                            value="<?= html($_POST['custom_code'] ?? '') ?>"
+                            value="<?= html($_POST['custom_code'] ?? $defaultCustomCode) ?>"
                         >
                         <small style="color: var(--color-text-muted); display: block; margin-top: 0.5rem;">
                             <?= t('link.custom_code_premium_only') ?>
@@ -204,12 +239,17 @@ require __DIR__ . '/../views/partials/header.php';
                             <?= t('link.expiration_date') ?>
                         </label>
                         <input 
-                            type="datetime-local" 
+                            type="text" 
                             id="expiration_date" 
                             name="expiration_date" 
+                            placeholder="MM/DD/YYYY HH:MM"
+                            pattern="\d{1,2}/\d{1,2}/\d{4}\s+\d{1,2}:\d{2}"
                             style="width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--color-border, #334155); background: var(--color-bg, #0f172a); color: var(--color-text, #f1f5f9);"
-                            value="<?= html($_POST['expiration_date'] ?? '') ?>"
+                            value="<?= html($_POST['expiration_date'] ?? $defaultExpirationDate) ?>"
                         >
+                        <small style="color: var(--color-text-muted); display: block; margin-top: 0.5rem;">
+                            <?= t('link.expiration_date_format') ?>
+                        </small>
                     </div>
                 <?php endif; ?>
 
