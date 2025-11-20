@@ -40,12 +40,17 @@ $currentPlan = ($user['plan'] ?? 'FREE');
 $isPremium = ($currentPlan === 'PREMIUM');
 $isEnterprise = ($currentPlan === 'ENTERPRISE');
 
-// Get analytics
+// Get analytics with comparison
+$analyticsData = [];
 $analytics = [];
 $deviceBreakdown = [];
 $countryBreakdown = [];
+$trends = [];
+$selectedDays = isset($_GET['days']) ? (int)$_GET['days'] : 30;
 if (!empty($link['id'])) {
-    $analytics = $analyticsService->getLinkAnalytics((int)$link['id'], 30);
+    $analyticsData = $analyticsService->getLinkAnalyticsWithComparison((int)$link['id'], $selectedDays);
+    $analytics = $analyticsData['current'] ?? [];
+    $trends = $analyticsData['trends'] ?? [];
     $deviceBreakdown = $analyticsService->getDeviceBreakdown($analytics['device_stats'] ?? []);
     $countryBreakdown = $analyticsService->getCountryBreakdown($analytics['country_stats'] ?? []);
 }
@@ -70,7 +75,7 @@ $link = $linkData;
 
 <section style="padding: 4rem 0;">
     <div class="container" style="max-width: 1200px;">
-        <!-- Link Info -->
+        <!-- Link Header -->
         <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header">
                 <div>
@@ -81,7 +86,21 @@ $link = $linkData;
                     <?= (!empty($link['is_active']) && $link['is_active'] == 1) ? 'Activo' : 'Inactivo' ?>
                 </span>
             </div>
-            <div style="padding: 1.5rem;">
+        </div>
+
+        <!-- Tabs Container -->
+        <div class="tabs-container">
+            <div class="tab-header" role="tablist">
+                <button class="tab-button active" role="tab" aria-selected="true" aria-controls="tab-details" id="tab-button-details" data-tab="details" onclick="if(typeof window.switchTab==='function'){window.switchTab('details');}return false;">
+                    Detalles del Enlace
+                </button>
+                <button class="tab-button" role="tab" aria-selected="false" aria-controls="tab-analytics" id="tab-button-analytics" data-tab="analytics" onclick="if(typeof window.switchTab==='function'){window.switchTab('analytics');}return false;">
+                    Analíticas
+                </button>
+            </div>
+
+            <!-- Tab 1: Link Details -->
+            <div id="tab-details" class="tab-content active" role="tabpanel" aria-labelledby="tab-button-details" style="display: block;">
                 <?php if (!empty($link['original_url'])): ?>
                     <div style="margin-bottom: 1rem;">
                         <strong>URL Original:</strong><br>
@@ -169,17 +188,19 @@ $link = $linkData;
                     </div>
                 <?php endif; ?>
             </div>
-        </div>
 
-        <!-- Analytics -->
-        <div class="card">
-            <div class="card-header">
-                <div>
-                    <h2>Analíticas</h2>
-                    <p class="text-muted">Estadísticas de clics</p>
-                </div>
-            </div>
-            <div style="padding: 1.5rem;">
+            <!-- Tab 2: Analytics -->
+            <div id="tab-analytics" class="tab-content" role="tabpanel" aria-labelledby="tab-button-analytics" style="display: none;">
+                <?php if (empty($analytics) || empty($link['id'])): ?>
+                    <div style="text-align: center; padding: 3rem 1rem;">
+                        <p style="color: var(--color-text-muted); font-size: 1.1rem; margin-bottom: 1rem;">
+                            No hay datos de analíticas disponibles aún.
+                        </p>
+                        <p style="color: var(--color-text-muted); font-size: 0.9rem;">
+                            Las estadísticas aparecerán aquí una vez que el enlace reciba clics.
+                        </p>
+                    </div>
+                <?php else: ?>
                 <!-- Total Clicks -->
                 <div style="margin-bottom: 2rem;">
                     <div style="font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;">
@@ -188,10 +209,88 @@ $link = $linkData;
                     <div style="color: var(--color-text-muted);">Total de Clics</div>
                 </div>
 
+                <!-- Trend Indicators -->
+                <?php if (!empty($trends)): ?>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <!-- Total Clicks Trend -->
+                    <div class="card" style="padding: 1.25rem; border-left: 3px solid <?= ($trends['total_clicks']['is_positive'] ?? true) ? '#10b981' : '#ef4444' ?>;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div style="color: var(--color-text-muted); font-size: 0.875rem; font-weight: 500;">Total de Clics</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: <?= ($trends['total_clicks']['is_positive'] ?? true) ? '#10b981' : '#ef4444' ?>;">
+                                <?= ($trends['total_clicks']['is_positive'] ?? true) ? '↑' : '↓' ?>
+                                <?= abs($trends['total_clicks']['change_percent'] ?? 0) ?>%
+                            </div>
+                        </div>
+                        <div style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">
+                            <?= number_format($trends['total_clicks']['current'] ?? 0) ?>
+                        </div>
+                        <div style="color: var(--color-text-muted); font-size: 0.875rem;">
+                            Anterior: <?= number_format($trends['total_clicks']['previous'] ?? 0) ?>
+                        </div>
+                    </div>
+
+                    <!-- Average Daily Trend -->
+                    <div class="card" style="padding: 1.25rem; border-left: 3px solid <?= ($trends['average_daily']['is_positive'] ?? true) ? '#10b981' : '#ef4444' ?>;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div style="color: var(--color-text-muted); font-size: 0.875rem; font-weight: 500;">Promedio Diario</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: <?= ($trends['average_daily']['is_positive'] ?? true) ? '#10b981' : '#ef4444' ?>;">
+                                <?= ($trends['average_daily']['is_positive'] ?? true) ? '↑' : '↓' ?>
+                                <?= abs($trends['average_daily']['change_percent'] ?? 0) ?>%
+                            </div>
+                        </div>
+                        <div style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">
+                            <?= number_format($trends['average_daily']['current'] ?? 0, 1) ?>
+                        </div>
+                        <div style="color: var(--color-text-muted); font-size: 0.875rem;">
+                            Anterior: <?= number_format($trends['average_daily']['previous'] ?? 0, 1) ?>
+                        </div>
+                    </div>
+
+                    <!-- Peak Day Trend -->
+                    <div class="card" style="padding: 1.25rem; border-left: 3px solid <?= ($trends['peak_day']['is_positive'] ?? true) ? '#10b981' : '#ef4444' ?>;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div style="color: var(--color-text-muted); font-size: 0.875rem; font-weight: 500;">Día Pico</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: <?= ($trends['peak_day']['is_positive'] ?? true) ? '#10b981' : '#ef4444' ?>;">
+                                <?= ($trends['peak_day']['is_positive'] ?? true) ? '↑' : '↓' ?>
+                                <?= abs($trends['peak_day']['change_percent'] ?? 0) ?>%
+                            </div>
+                        </div>
+                        <div style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;">
+                            <?= number_format($trends['peak_day']['current'] ?? 0) ?>
+                        </div>
+                        <div style="color: var(--color-text-muted); font-size: 0.875rem;">
+                            <?php if (!empty($trends['peak_day']['current_date'])): ?>
+                                <?= date('d/m/Y', strtotime($trends['peak_day']['current_date'])) ?>
+                            <?php else: ?>
+                                Sin datos
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <!-- Daily Clicks Chart -->
                 <div style="margin-bottom: 2rem;">
-                    <h3>Clics Diarios (últimos 30 días)</h3>
-                    <canvas id="dailyChart" style="max-height: 300px;"></canvas>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                        <h3 style="margin: 0;">Clics Diarios</h3>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="changePeriod(7)" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.875rem; <?= $selectedDays === 7 ? 'background: var(--color-primary, #60a5fa); color: white;' : '' ?>">
+                                7 días
+                            </button>
+                            <button onclick="changePeriod(30)" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.875rem; <?= $selectedDays === 30 ? 'background: var(--color-primary, #60a5fa); color: white;' : '' ?>">
+                                30 días
+                            </button>
+                            <button onclick="changePeriod(90)" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.875rem; <?= $selectedDays === 90 ? 'background: var(--color-primary, #60a5fa); color: white;' : '' ?>">
+                                90 días
+                            </button>
+                            <button onclick="toggleComparison()" class="btn btn-outline" id="comparisonToggle" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                Comparar
+                            </button>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Device Breakdown -->
@@ -225,6 +324,7 @@ $link = $linkData;
                         </div>
                     </div>
                 <?php endif; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -237,27 +337,412 @@ function copyToClipboard(text) {
     });
 }
 
-// Simple chart using Chart.js if available, or basic bar chart
-const dailyData = <?= json_encode($analytics['daily_clicks'] ?? []) ?>;
-if (typeof Chart !== 'undefined') {
-    const ctx = document.getElementById('dailyChart').getContext('2d');
-    new Chart(ctx, {
+// Tab switching functionality - define immediately and make globally accessible
+window.switchTab = function(tabName) {
+    console.log('Switching to tab:', tabName);
+    
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+        content.setAttribute('aria-hidden', 'true');
+        content.style.display = 'none';
+    });
+    
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+        button.setAttribute('aria-selected', 'false');
+    });
+    
+    // Show selected tab content
+    const selectedTab = document.getElementById('tab-' + tabName);
+    const selectedButton = document.getElementById('tab-button-' + tabName);
+    
+    console.log('Selected tab element:', selectedTab);
+    console.log('Selected button element:', selectedButton);
+    
+    if (selectedTab && selectedButton) {
+        selectedTab.classList.add('active');
+        selectedTab.setAttribute('aria-hidden', 'false');
+        selectedTab.style.display = 'block';
+        selectedButton.classList.add('active');
+        selectedButton.setAttribute('aria-selected', 'true');
+        
+        console.log('Tab switched successfully');
+        
+        // If switching to analytics tab, ensure chart is properly rendered
+        if (tabName === 'analytics') {
+            setTimeout(() => {
+                console.log('Initializing chart for analytics tab');
+                // Initialize chart if it doesn't exist
+                if (typeof chartInstance === 'undefined' || chartInstance === null) {
+                    if (typeof initializeChart === 'function') {
+                        initializeChart();
+                    }
+                } else {
+                    // Resize existing chart
+                    if (chartInstance.resize) {
+                        chartInstance.resize();
+                    }
+                    if (typeof updateGradient === 'function') {
+                        updateGradient(chartInstance);
+                    } else if (chartInstance.chartArea) {
+                        const gradient = createGradient(chartInstance);
+                        if (gradient && chartInstance.data.datasets[0]) {
+                            chartInstance.data.datasets[0].backgroundColor = gradient;
+                            chartInstance.update('none');
+                        }
+                    }
+                }
+            }, 150);
+        }
+    } else {
+        console.error('Tab elements not found:', { selectedTab, selectedButton });
+    }
+};
+
+// Initialize tabs on page load
+(function() {
+    function initTabs() {
+        console.log('Initializing tabs');
+        
+        // Add click handlers to tab buttons
+        const tabButtons = document.querySelectorAll('.tab-button');
+        console.log('Found tab buttons:', tabButtons.length);
+        tabButtons.forEach(button => {
+            const tabName = button.getAttribute('data-tab');
+            console.log('Attaching listener to button:', tabName);
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const tabName = this.getAttribute('data-tab');
+                console.log('Button clicked, tab name:', tabName);
+                if (tabName && typeof window.switchTab === 'function') {
+                    window.switchTab(tabName);
+                } else {
+                    console.error('switchTab function not available or invalid tab name');
+                }
+            });
+        });
+        
+        // Ensure details tab is visible by default
+        const detailsTab = document.getElementById('tab-details');
+        const analyticsTab = document.getElementById('tab-analytics');
+        
+        if (detailsTab) {
+            detailsTab.classList.add('active');
+            detailsTab.style.display = 'block';
+            detailsTab.setAttribute('aria-hidden', 'false');
+        }
+        
+        if (analyticsTab) {
+            analyticsTab.classList.remove('active');
+            analyticsTab.style.display = 'none';
+            analyticsTab.setAttribute('aria-hidden', 'true');
+        }
+        
+        // Check for hash in URL to open specific tab
+        const hash = window.location.hash;
+        if (hash === '#analytics' && typeof window.switchTab === 'function') {
+            window.switchTab('analytics');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTabs);
+    } else {
+        initTabs();
+    }
+})();
+
+function changePeriod(days) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('days', days);
+    window.location.href = url.toString();
+}
+
+let showComparison = false;
+let chartInstance = null;
+
+function toggleComparison() {
+    showComparison = !showComparison;
+    const btn = document.getElementById('comparisonToggle');
+    if (showComparison) {
+        btn.style.background = 'var(--color-primary, #60a5fa)';
+        btn.style.color = 'white';
+    } else {
+        btn.style.background = '';
+        btn.style.color = '';
+    }
+    updateChart();
+}
+
+function updateChart() {
+    if (!chartInstance) return;
+    
+    const datasets = [{
+        label: 'Clics',
+        data: dailyData.map(d => d.clicks),
+        borderColor: '#60a5fa',
+        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#60a5fa',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 2,
+    }];
+    
+    if (showComparison && previousData && previousData.length > 0) {
+        // Align previous data to match current period length
+        // Take the last N days from previous period to match current period
+        const alignedPreviousData = previousData.slice(-dailyData.length);
+        datasets.push({
+            label: 'Período Anterior',
+            data: alignedPreviousData.map(d => d.clicks),
+            borderColor: 'rgba(96, 165, 250, 0.5)',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+        });
+    }
+    
+    chartInstance.data.datasets = datasets;
+    chartInstance.update();
+    
+    // Update gradient after chart update
+    setTimeout(() => {
+        if (chartInstance.chartArea) {
+            const gradient = createGradient(chartInstance);
+            if (gradient && chartInstance.data.datasets[0]) {
+                chartInstance.data.datasets[0].backgroundColor = gradient;
+                chartInstance.update('none');
+            }
+        }
+    }, 50);
+}
+
+function createGradient(chart) {
+    const ctx = chart.ctx;
+    const chartArea = chart.chartArea;
+    
+    if (!chartArea) {
+        return 'rgba(96, 165, 250, 0.1)';
+    }
+    
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, 'rgba(96, 165, 250, 0.3)');
+    gradient.addColorStop(0.5, 'rgba(96, 165, 250, 0.15)');
+    gradient.addColorStop(1, 'rgba(96, 165, 250, 0.05)');
+    return gradient;
+}
+
+// Chart data
+var dailyData = <?php 
+    $dailyClicks = isset($analytics['daily_clicks']) && is_array($analytics['daily_clicks']) ? $analytics['daily_clicks'] : [];
+    $json = json_encode($dailyClicks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+    echo ($json === false) ? '[]' : $json;
+?>;
+var previousData = <?php 
+    $previousClicks = [];
+    if (isset($analyticsData['previous']) && is_array($analyticsData['previous']) && isset($analyticsData['previous']['daily_clicks'])) {
+        $previousClicks = $analyticsData['previous']['daily_clicks'];
+    }
+    $json = json_encode($previousClicks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+    echo ($json === false) ? '[]' : $json;
+?>;
+
+// Format dates for display
+function formatDate(dateStr) {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+}
+
+function initializeChart() {
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js not loaded');
+        return;
+    }
+    
+    const chartCanvas = document.getElementById('dailyChart');
+    if (!chartCanvas) {
+        console.warn('Chart canvas not found');
+        return;
+    }
+    
+    // Check if data is available
+    if (!dailyData || dailyData.length === 0) {
+        console.warn('No chart data available');
+        return;
+    }
+    
+    // Don't initialize if chart already exists
+    if (chartInstance !== null && chartInstance !== undefined) {
+        // Just resize if it exists
+        setTimeout(() => {
+            if (chartInstance.resize) {
+                chartInstance.resize();
+            }
+        }, 100);
+        return;
+    }
+    
+    const ctx = chartCanvas.getContext('2d');
+    
+    chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dailyData.map(d => d.date),
+            labels: dailyData.map(d => formatDate(d.date)),
             datasets: [{
                 label: 'Clics',
                 data: dailyData.map(d => d.clicks),
                 borderColor: '#60a5fa',
                 backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: '#60a5fa',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: 'var(--color-text, #e2e8f0)',
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '500',
+                        },
+                        usePointStyle: true,
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    padding: 12,
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#e2e8f0',
+                    borderColor: 'rgba(96, 165, 250, 0.3)',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        title: function(context) {
+                            const index = context[0].dataIndex;
+                            const dateStr = dailyData[index].date;
+                            const date = new Date(dateStr + 'T00:00:00');
+                            return date.toLocaleDateString('es-ES', { 
+                                weekday: 'long', 
+                                day: 'numeric', 
+                                month: 'long',
+                                year: 'numeric'
+                            });
+                        },
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toLocaleString('es-ES');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: 'var(--color-text-muted, #94a3b8)',
+                        font: {
+                            size: 11,
+                        },
+                        maxRotation: 45,
+                        minRotation: 0,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: 'var(--color-text-muted, #94a3b8)',
+                        font: {
+                            size: 11,
+                        },
+                        callback: function(value) {
+                            return value.toLocaleString('es-ES');
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart',
+            },
+            onResize: function(chart) {
+                // Update gradient on resize
+                updateGradient(chart);
+            }
         }
     });
-}
+        // Update gradient after chart is drawn
+        function updateGradient(chart) {
+            const dataset = chart.data.datasets[0];
+            if (dataset && chart.chartArea) {
+                const gradient = createGradient(chart);
+                if (gradient) {
+                    dataset.backgroundColor = gradient;
+                }
+            }
+        }
+        
+        // Set gradient after initial render
+        chartInstance.update();
+        setTimeout(() => {
+            updateGradient(chartInstance);
+            chartInstance.update('none');
+        }, 100);
+    }
+
+// Initialize chart only if analytics tab is visible on page load
+(function() {
+    function checkAndInitChart() {
+        const analyticsTab = document.getElementById('tab-analytics');
+        if (analyticsTab && analyticsTab.classList.contains('active')) {
+            // Analytics tab is visible, initialize chart
+            setTimeout(() => {
+                initializeChart();
+            }, 200);
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkAndInitChart);
+    } else {
+        checkAndInitChart();
+    }
+})();
 </script>
 
 <?php require __DIR__ . '/../views/partials/footer.php'; ?>

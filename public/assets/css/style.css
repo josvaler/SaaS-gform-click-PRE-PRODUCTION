@@ -1872,3 +1872,190 @@ code {
     }
 }
 
+/* Pricing Page Styles */
+.premium-plan-card {
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.premium-plan-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(14, 165, 233, 0.3), 0 0 30px rgba(14, 165, 233, 0.2);
+}
+
+.premium-plan-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.premium-plan-card:hover::before {
+    opacity: 1;
+}
+
+.enterprise-plan-card {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.enterprise-plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(167, 139, 250, 0.2);
+}
+
+/* Pricing Cards General */
+section .card {
+    transition: all 0.3s ease;
+}
+
+section .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design for Pricing */
+@media (max-width: 768px) {
+    section h1 {
+        font-size: 2rem !important;
+    }
+
+    section > div > div:first-child p {
+        font-size: 1.1rem !important;
+    }
+
+    .premium-plan-card,
+    .enterprise-plan-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .premium-plan-card > div:first-child,
+    .enterprise-plan-card > div:first-child {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .premium-plan-card > div:first-child > div:last-child,
+    .enterprise-plan-card > div:first-child > div:last-child {
+        position: static !important;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Tab Navigation Styles */
+.tabs-container {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.tab-header {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(11, 15, 25, 0.4);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    overflow-x: auto;
+}
+
+.tab-button {
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.tab-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(56, 189, 248, 0.1));
+    transition: left 0.3s ease;
+    z-index: 0;
+}
+
+.tab-button:hover {
+    color: var(--text-primary);
+    border-color: rgba(14, 165, 233, 0.3);
+    background: rgba(14, 165, 233, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+}
+
+.tab-button:hover::before {
+    left: 0;
+}
+
+.tab-button.active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(56, 189, 248, 0.2));
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.3), inset 0 0 20px rgba(14, 165, 233, 0.1);
+    font-weight: 600;
+}
+
+.tab-button.active::before {
+    left: 0;
+}
+
+.tab-content {
+    display: none !important;
+    padding: 1.5rem;
+    animation: fadeInTab 0.3s ease;
+}
+
+.tab-content.active {
+    display: block !important;
+}
+
+@keyframes fadeInTab {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .tab-header {
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+    }
+
+    .tab-button {
+        padding: 0.625rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .tab-content {
+        padding: 1rem;
+    }
+}
+

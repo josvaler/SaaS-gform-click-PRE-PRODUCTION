@@ -117,5 +117,158 @@ class AnalyticsService
         
         return $breakdown;
     }
+
+    public function getLinkAnalyticsWithComparison(int $shortLinkId, int $days = 30): array
+    {
+        // Get current period data
+        $currentAnalytics = $this->getLinkAnalytics($shortLinkId, $days);
+        
+        // Calculate date range for previous period
+        $today = new \DateTime();
+        $currentStartDate = clone $today;
+        $currentStartDate->modify("-{$days} days");
+        
+        $previousEndDate = clone $currentStartDate;
+        $previousEndDate->modify('-1 day');
+        $previousStartDate = clone $previousEndDate;
+        $previousStartDate->modify("-{$days} days");
+        
+        // Get previous period daily clicks
+        $previousDailyClicks = $this->clickRepo->getClicksByDateRange(
+            $shortLinkId,
+            $previousStartDate->format('Y-m-d'),
+            $previousEndDate->format('Y-m-d')
+        );
+        
+        $previousFormatted = $this->formatDailyClicksForRange(
+            $previousDailyClicks,
+            $previousStartDate,
+            $previousEndDate
+        );
+        
+        // Calculate totals for comparison
+        $currentTotal = array_sum(array_column($currentAnalytics['daily_clicks'], 'clicks'));
+        $previousTotal = array_sum(array_column($previousFormatted, 'clicks'));
+        
+        // Calculate trends
+        $trends = $this->calculateTrends(
+            $currentAnalytics['daily_clicks'],
+            $previousFormatted,
+            $currentTotal,
+            $previousTotal
+        );
+        
+        return [
+            'current' => $currentAnalytics,
+            'previous' => [
+                'daily_clicks' => $previousFormatted,
+                'total_clicks' => $previousTotal,
+            ],
+            'trends' => $trends,
+        ];
+    }
+
+    private function formatDailyClicksForRange(array $dailyClicks, \DateTime $startDate, \DateTime $endDate): array
+    {
+        $formatted = [];
+        $currentDate = clone $startDate;
+        
+        // Create map of existing clicks
+        $clicksMap = [];
+        foreach ($dailyClicks as $click) {
+            $clicksMap[$click['date']] = (int)$click['clicks'];
+        }
+        
+        // Fill all days in range
+        while ($currentDate <= $endDate) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $formatted[] = [
+                'date' => $dateStr,
+                'clicks' => $clicksMap[$dateStr] ?? 0
+            ];
+            $currentDate->modify('+1 day');
+        }
+        
+        return $formatted;
+    }
+
+    public function calculateTrends(array $currentDaily, array $previousDaily, int $currentTotal, int $previousTotal): array
+    {
+        // Calculate percentage change for total clicks
+        $totalChange = 0;
+        $totalChangePercent = 0;
+        if ($previousTotal > 0) {
+            $totalChange = $currentTotal - $previousTotal;
+            $totalChangePercent = round(($totalChange / $previousTotal) * 100, 1);
+        } elseif ($currentTotal > 0) {
+            $totalChange = $currentTotal;
+            $totalChangePercent = 100;
+        }
+        
+        // Calculate average daily clicks
+        $currentAvg = count($currentDaily) > 0 ? round($currentTotal / count($currentDaily), 1) : 0;
+        $previousAvg = count($previousDaily) > 0 ? round($previousTotal / count($previousDaily), 1) : 0;
+        
+        $avgChange = $currentAvg - $previousAvg;
+        $avgChangePercent = 0;
+        if ($previousAvg > 0) {
+            $avgChangePercent = round(($avgChange / $previousAvg) * 100, 1);
+        } elseif ($currentAvg > 0) {
+            $avgChangePercent = 100;
+        }
+        
+        // Find peak days
+        $currentPeak = 0;
+        $currentPeakDate = null;
+        foreach ($currentDaily as $day) {
+            if ($day['clicks'] > $currentPeak) {
+                $currentPeak = $day['clicks'];
+                $currentPeakDate = $day['date'];
+            }
+        }
+        
+        $previousPeak = 0;
+        $previousPeakDate = null;
+        foreach ($previousDaily as $day) {
+            if ($day['clicks'] > $previousPeak) {
+                $previousPeak = $day['clicks'];
+                $previousPeakDate = $day['date'];
+            }
+        }
+        
+        $peakChange = $currentPeak - $previousPeak;
+        $peakChangePercent = 0;
+        if ($previousPeak > 0) {
+            $peakChangePercent = round(($peakChange / $previousPeak) * 100, 1);
+        } elseif ($currentPeak > 0) {
+            $peakChangePercent = 100;
+        }
+        
+        return [
+            'total_clicks' => [
+                'current' => $currentTotal,
+                'previous' => $previousTotal,
+                'change' => $totalChange,
+                'change_percent' => $totalChangePercent,
+                'is_positive' => $totalChange >= 0,
+            ],
+            'average_daily' => [
+                'current' => $currentAvg,
+                'previous' => $previousAvg,
+                'change' => $avgChange,
+                'change_percent' => $avgChangePercent,
+                'is_positive' => $avgChange >= 0,
+            ],
+            'peak_day' => [
+                'current' => $currentPeak,
+                'current_date' => $currentPeakDate,
+                'previous' => $previousPeak,
+                'previous_date' => $previousPeakDate,
+                'change' => $peakChange,
+                'change_percent' => $peakChangePercent,
+                'is_positive' => $peakChange >= 0,
+            ],
+        ];
+    }
 }
 

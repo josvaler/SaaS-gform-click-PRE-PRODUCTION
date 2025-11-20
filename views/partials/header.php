@@ -163,8 +163,8 @@ $showAds = $currentUser && $userPlan === 'FREE';
                     <div class="mobile-language-selector">
                         <form method="POST" action="/set-language">
                             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                            <label><?= t('lang.select') ?>:</label>
-                            <select name="lang" onchange="this.form.submit()">
+                            <label for="mobile-lang-select"><?= t('lang.select') ?>:</label>
+                            <select id="mobile-lang-select" name="lang" onchange="this.form.submit()">
                                 <option value="es" <?= current_lang() === 'es' ? 'selected' : '' ?>><?= t('lang.spanish') ?></option>
                                 <option value="en" <?= current_lang() === 'en' ? 'selected' : '' ?>><?= t('lang.english') ?></option>
                             </select>
