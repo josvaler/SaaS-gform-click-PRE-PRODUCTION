@@ -22,8 +22,10 @@ $shortCodeService = new ShortCodeService($shortLinkRepo);
 $qrService = new QrCodeService($appConfig['qr_dir'], $appConfig['base_url']);
 
 $currentPlan = ($user['plan'] ?? 'FREE');
+$currentRole = ($user['role'] ?? 'USER');
 $isPremium = ($currentPlan === 'PREMIUM');
 $isEnterprise = ($currentPlan === 'ENTERPRISE');
+$isAdmin = ($currentRole === 'ADMIN');
 
 $error = null;
 $success = null;
@@ -168,6 +170,16 @@ require __DIR__ . '/../views/partials/header.php';
                 <div>
                     <h2><?= t('link.create_short') ?></h2>
                     <p class="text-muted"><?= t('link.shorten_description') ?></p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <?php if ($isAdmin): ?>
+                        <span class="badge premium-badge" style="font-size: 0.65rem; padding: 0.25rem 0.75rem; font-weight: 600;">
+                            👑 ADMIN
+                        </span>
+                    <?php endif; ?>
+                    <span class="badge <?= $isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge') ?>" style="font-size: 0.65rem; padding: 0.25rem 0.75rem; font-weight: 600;">
+                        <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                    </span>
                 </div>
             </div>
 

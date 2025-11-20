@@ -58,9 +58,16 @@ require __DIR__ . '/../views/partials/header.php';
                     <h2><?= t('dashboard.welcome', ['name' => html($user['name'] ?? 'User')]) ?></h2>
                     <p class="text-muted"><?= t('dashboard.subtitle') ?></p>
                 </div>
-                <span class="badge <?= $isAdmin ? 'premium-badge' : ($isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge')) ?>">
-                    <?= $isAdmin ? '👑 ADMIN' : ($isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE')) ?>
-                </span>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <?php if ($isAdmin): ?>
+                        <span class="badge premium-badge" style="font-size: 0.65rem; padding: 0.25rem 0.75rem; font-weight: 600;">
+                            👑 ADMIN
+                        </span>
+                    <?php endif; ?>
+                    <span class="badge <?= $isEnterprise ? 'enterprise-badge' : ($isPremium ? 'premium-badge' : 'free-badge') ?>" style="font-size: 0.65rem; padding: 0.25rem 0.75rem; font-weight: 600;">
+                        <?= $isEnterprise ? '🏢 ENTERPRISE' : ($isPremium ? '💎 PREMIUM' : '⭐ FREE') ?>
+                    </span>
+                </div>
             </div>
 
             <div style="padding: 1.5rem;">
