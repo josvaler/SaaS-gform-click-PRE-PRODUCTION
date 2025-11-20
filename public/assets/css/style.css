@@ -1113,3 +1113,762 @@ code {
     }
 }
 
+/* Testimonials Section */
+.testimonials-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.testimonials-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.testimonials-grid {
+    position: relative;
+    z-index: 1;
+}
+
+.testimonial-card {
+    position: relative;
+    cursor: default;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.testimonial-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: 1rem;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(14, 165, 233, 0.2);
+}
+
+.testimonial-card:hover::before {
+    opacity: 1;
+}
+
+.testimonial-card:hover .testimonial-quote-icon {
+    color: rgba(14, 165, 233, 0.4);
+    transform: scale(1.1);
+}
+
+.testimonial-quote-icon {
+    font-family: Georgia, serif;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.testimonial-quote {
+    position: relative;
+    font-style: italic;
+}
+
+.testimonial-avatar {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover .testimonial-avatar {
+    transform: scale(1.1);
+}
+
+.testimonial-name {
+    transition: color 0.3s ease;
+}
+
+.testimonial-card:hover .testimonial-name {
+    color: var(--accent-primary);
+}
+
+/* Responsive Design for Testimonials */
+@media (max-width: 768px) {
+    .testimonials-section {
+        padding: 3rem 0 !important;
+    }
+
+    .testimonials-section h2 {
+        font-size: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .testimonials-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    .testimonial-card {
+        padding: 1.5rem !important;
+    }
+
+    .testimonial-quote {
+        font-size: 0.95rem !important;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .testimonials-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Enhanced Hero CTA */
+.hero .btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.hero .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(14, 165, 233, 0.4) !important;
+}
+
+.hero .btn-primary:hover::before {
+    left: 100%;
+}
+
+/* How It Works Section */
+.how-it-works-section {
+    position: relative;
+}
+
+.how-it-works-step {
+    position: relative;
+}
+
+.how-it-works-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 1rem;
+    pointer-events: none;
+}
+
+.how-it-works-step:hover {
+    transform: translateY(-8px);
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(14, 165, 233, 0.15);
+}
+
+.how-it-works-step:hover::before {
+    opacity: 1;
+}
+
+.how-it-works-step:hover .step-number {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 30px rgba(14, 165, 233, 0.4) !important;
+}
+
+.step-number {
+    transition: all 0.3s ease;
+}
+
+/* Final CTA Section */
+.final-cta-section {
+    position: relative;
+}
+
+.final-cta-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.final-cta-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.final-cta-button:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 50px rgba(14, 165, 233, 0.5) !important;
+}
+
+.final-cta-button:hover::before {
+    left: 100%;
+}
+
+.final-cta-button:active {
+    transform: translateY(-2px) scale(1);
+}
+
+/* Responsive Design for CTA Sections */
+@media (max-width: 768px) {
+    .how-it-works-section {
+        padding: 3rem 0 !important;
+    }
+
+    .how-it-works-section h2 {
+        font-size: 2rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .how-it-works-section > div > div:first-child p {
+        font-size: 1rem !important;
+    }
+
+    .how-it-works-steps {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .how-it-works-step {
+        padding: 1.5rem !important;
+    }
+
+    .how-it-works-step h3 {
+        font-size: 1.1rem !important;
+    }
+
+    .how-it-works-step p {
+        font-size: 0.9rem !important;
+    }
+
+    .final-cta-section {
+        padding: 3rem 0 !important;
+    }
+
+    .final-cta-section h2 {
+        font-size: 2rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .final-cta-section > div > div:first-child p {
+        font-size: 1.1rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .final-cta-button {
+        font-size: 1.1rem !important;
+        padding: 1rem 2.5rem !important;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .hero .btn-primary {
+        font-size: 1.1rem !important;
+        padding: 0.875rem 2rem !important;
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .how-it-works-steps {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .how-it-works-steps > div:last-child {
+        grid-column: 1 / -1;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+
+/* Hero Animation Styles */
+.hero-content {
+    position: relative;
+}
+
+.hero-animation-container {
+    position: relative;
+    min-height: 400px;
+}
+
+.link-transformation-animation {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    height: 400px;
+    margin: 0 auto;
+}
+
+.animation-step {
+    width: 100%;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Step 1: Long URL Entry */
+.step-1 {
+    animation: slideInFromLeft 0.8s ease-out, fadeOut 0.5s ease-out 2.2s forwards;
+}
+
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Step 2: Transformation */
+.step-2 {
+    animation: fadeIn 0.5s ease-out 2.5s forwards, fadeOut 0.5s ease-out 3.5s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Step 3: Result */
+.step-3 {
+    animation: fadeInScale 0.8s ease-out 4s forwards;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.5) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.long-url-box {
+    animation: pulse 2s ease-in-out 0.5s;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 25px rgba(14, 165, 233, 0.2);
+    }
+}
+
+.short-link-box {
+    animation: glow 2s ease-in-out 4.5s infinite;
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 8px 30px rgba(14, 165, 233, 0.3);
+    }
+    50% {
+        box-shadow: 0 12px 40px rgba(14, 165, 233, 0.5);
+    }
+}
+
+.qr-code-box {
+    animation: slideUp 0.6s ease-out 4.3s both;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design for Hero Animation */
+@media (max-width: 968px) {
+    .hero-content {
+        grid-template-columns: 1fr !important;
+        gap: 3rem !important;
+    }
+    
+    .hero-content > div:first-child {
+        text-align: center !important;
+    }
+    
+    .hero-content > div:first-child > div {
+        align-items: center !important;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem !important;
+    }
+    
+    .hero-animation-container {
+        min-height: 350px;
+    }
+    
+    .link-transformation-animation {
+        height: 350px;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero h1 {
+        font-size: 2rem !important;
+    }
+    
+    .hero p {
+        font-size: 1.1rem !important;
+    }
+    
+    .hero-animation-container {
+        min-height: 300px;
+    }
+    
+    .link-transformation-animation {
+        height: 300px;
+    }
+    
+    .long-url-box {
+        font-size: 0.75rem !important;
+        padding: 1rem !important;
+    }
+    
+    .short-link-box {
+        font-size: 1rem !important;
+        padding: 1.25rem !important;
+    }
+    
+    .qr-code-box svg {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* Key Features Section */
+.key-features-section {
+    position: relative;
+}
+
+.features-grid {
+    position: relative;
+}
+
+.feature-card {
+    position: relative;
+    cursor: default;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: 1rem;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(14, 165, 233, 0.2);
+}
+
+.feature-card:hover::before {
+    opacity: 1;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.feature-icon {
+    transition: all 0.3s ease;
+}
+
+.feature-badge {
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-badge {
+    transform: scale(1.05);
+}
+
+/* Final CTA Secondary Button */
+.final-cta-button-secondary {
+    position: relative;
+    overflow: hidden;
+}
+
+.final-cta-button-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.final-cta-button-secondary:hover {
+    transform: translateY(-2px);
+    background: rgba(14, 165, 233, 0.1) !important;
+    border-color: var(--accent-secondary) !important;
+    color: var(--accent-secondary) !important;
+    box-shadow: 0 8px 30px rgba(14, 165, 233, 0.3) !important;
+}
+
+.final-cta-button-secondary:hover::before {
+    left: 100%;
+}
+
+.final-cta-button-secondary:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design for Features Section */
+@media (max-width: 768px) {
+    .key-features-section {
+        padding: 3rem 0 !important;
+    }
+
+    .key-features-section h2 {
+        font-size: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .feature-card {
+        padding: 2rem !important;
+    }
+
+    .feature-icon {
+        width: 56px !important;
+        height: 56px !important;
+        font-size: 1.75rem !important;
+    }
+
+    .feature-card h3 {
+        font-size: 1.2rem !important;
+    }
+
+    .feature-card p {
+        font-size: 0.95rem !important;
+    }
+
+    .final-cta-section h2 {
+        font-size: 2rem !important;
+    }
+
+    .final-cta-section > div > div:first-child p {
+        font-size: 1.1rem !important;
+    }
+
+    .final-cta-button {
+        font-size: 1.1rem !important;
+        padding: 1rem 2.5rem !important;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .final-cta-button-secondary {
+        font-size: 1rem !important;
+        padding: 0.875rem 2rem !important;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .final-cta-section > div > div:first-child > div {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .features-grid > div:last-child {
+        grid-column: 1 / -1;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Dashboard Quota Banner */
+.quota-banner {
+    transition: all 0.3s ease;
+}
+
+.quota-banner:hover {
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.quota-banner a {
+    transition: all 0.2s ease;
+}
+
+.quota-banner a:hover {
+    color: var(--accent-secondary) !important;
+    text-decoration: underline;
+}
+
+/* Dashboard KPI Cards */
+.dashboard .card {
+    transition: all 0.3s ease;
+}
+
+.dashboard .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Premium Upgrade Banner */
+.premium-upgrade-banner {
+    transition: all 0.3s ease;
+    animation: subtleGlow 3s ease-in-out infinite;
+}
+
+@keyframes subtleGlow {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), 0 0 0 rgba(14, 165, 233, 0);
+    }
+    50% {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 30px rgba(14, 165, 233, 0.2);
+    }
+}
+
+.premium-upgrade-banner:hover {
+    transform: translateY(-4px);
+    border-color: rgba(14, 165, 233, 0.5) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 40px rgba(14, 165, 233, 0.3) !important;
+}
+
+.premium-upgrade-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.premium-upgrade-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.premium-upgrade-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(14, 165, 233, 0.4) !important;
+}
+
+.premium-upgrade-button:hover::before {
+    left: 100%;
+}
+
+.premium-upgrade-button:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design for Dashboard */
+@media (max-width: 640px) {
+    .quota-banner {
+        padding: 0.875rem !important;
+    }
+
+    .quota-banner > div:first-child {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .premium-upgrade-banner {
+        padding: 1.5rem !important;
+    }
+
+    .premium-upgrade-banner h3 {
+        font-size: 1.25rem !important;
+    }
+
+    .premium-upgrade-banner > div > div:first-child {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+
+    .premium-upgrade-banner > div > div:nth-child(3) {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+
+    .premium-upgrade-button {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+

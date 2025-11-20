@@ -395,3 +395,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Hero Animation Loop
+(function() {
+    const animationContainer = document.getElementById('linkAnimation');
+    if (!animationContainer) return;
+    
+    const step1 = animationContainer.querySelector('.step-1');
+    const step2 = animationContainer.querySelector('.step-2');
+    const step3 = animationContainer.querySelector('.step-3');
+    
+    if (!step1 || !step2 || !step3) return;
+    
+    // Reset animation classes
+    function resetAnimation() {
+        step1.style.animation = 'none';
+        step2.style.animation = 'none';
+        step3.style.animation = 'none';
+        step1.style.opacity = '0';
+        step2.style.opacity = '0';
+        step3.style.opacity = '0';
+        
+        // Force reflow
+        void step1.offsetWidth;
+        
+        // Restart animations
+        step1.style.animation = '';
+        step2.style.animation = '';
+        step3.style.animation = '';
+        step1.style.opacity = '1';
+    }
+    
+    // Loop animation every 5.5 seconds (animation duration + pause)
+    setInterval(resetAnimation, 5500);
+})();
+

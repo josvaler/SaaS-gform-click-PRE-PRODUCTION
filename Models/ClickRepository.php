@@ -132,5 +132,18 @@ class ClickRepository
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getTotalClicksByUserId(int $userId): int
+    {
+        $statement = $this->db->prepare(
+            'SELECT COUNT(*) as total_clicks 
+             FROM clicks c
+             INNER JOIN short_links sl ON c.short_link_id = sl.id
+             WHERE sl.user_id = :user_id'
+        );
+        $statement->execute(['user_id' => $userId]);
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        return (int)($result['total_clicks'] ?? 0);
+    }
 }
 
