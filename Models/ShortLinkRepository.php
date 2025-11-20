@@ -51,15 +51,16 @@ class ShortLinkRepository
 
     public function findByUserId(int $userId, int $limit = 50, int $offset = 0): array
     {
+        // Use integers directly in SQL for LIMIT/OFFSET (safe since they're validated as int)
+        $limit = (int)$limit;
+        $offset = (int)$offset;
         $statement = $this->db->prepare(
             'SELECT * FROM short_links 
              WHERE user_id = :user_id 
              ORDER BY created_at DESC 
-             LIMIT :limit OFFSET :offset'
+             LIMIT ' . $limit . ' OFFSET ' . $offset
         );
         $statement->bindValue('user_id', $userId, PDO::PARAM_INT);
-        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
-        $statement->bindValue('offset', $offset, PDO::PARAM_INT);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -157,17 +158,18 @@ class ShortLinkRepository
     public function searchByUser(int $userId, string $query, int $limit = 50, int $offset = 0): array
     {
         $searchTerm = '%' . $query . '%';
+        // Use integers directly in SQL for LIMIT/OFFSET (safe since they're validated as int)
+        $limit = (int)$limit;
+        $offset = (int)$offset;
         $statement = $this->db->prepare(
             'SELECT * FROM short_links 
              WHERE user_id = :user_id 
              AND (label LIKE :query OR original_url LIKE :query OR short_code LIKE :query)
              ORDER BY created_at DESC 
-             LIMIT :limit OFFSET :offset'
+             LIMIT ' . $limit . ' OFFSET ' . $offset
         );
         $statement->bindValue('user_id', $userId, PDO::PARAM_INT);
         $statement->bindValue('query', $searchTerm, PDO::PARAM_STR);
-        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
-        $statement->bindValue('offset', $offset, PDO::PARAM_INT);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -187,8 +189,12 @@ class ShortLinkRepository
         // Search query
         if (!empty($query)) {
             $searchTerm = '%' . $query . '%';
-            $conditions[] = '(label LIKE :query OR original_url LIKE :query OR short_code LIKE :query)';
-            $params['query'] = $searchTerm;
+            // Use separate parameter names for each LIKE clause (PDO doesn't allow reusing named parameters)
+            // COALESCE handles NULL values in label field
+            $conditions[] = '(COALESCE(label, \'\') LIKE :query_label OR original_url LIKE :query_url OR short_code LIKE :query_code)';
+            $params['query_label'] = $searchTerm;
+            $params['query_url'] = $searchTerm;
+            $params['query_code'] = $searchTerm;
         }
         
         // Status filter
@@ -210,17 +216,18 @@ class ShortLinkRepository
             $params['date_to'] = $dateTo;
         }
         
+        // Use integers directly in SQL for LIMIT/OFFSET (safe since they're validated as int)
+        $limit = (int)$limit;
+        $offset = (int)$offset;
         $sql = 'SELECT * FROM short_links 
                 WHERE ' . implode(' AND ', $conditions) . '
                 ORDER BY created_at DESC 
-                LIMIT :limit OFFSET :offset';
+                LIMIT ' . $limit . ' OFFSET ' . $offset;
         
         $statement = $this->db->prepare($sql);
         foreach ($params as $key => $value) {
             $statement->bindValue($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
-        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
-        $statement->bindValue('offset', $offset, PDO::PARAM_INT);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -238,8 +245,12 @@ class ShortLinkRepository
         // Search query
         if (!empty($query)) {
             $searchTerm = '%' . $query . '%';
-            $conditions[] = '(label LIKE :query OR original_url LIKE :query OR short_code LIKE :query)';
-            $params['query'] = $searchTerm;
+            // Use separate parameter names for each LIKE clause (PDO doesn't allow reusing named parameters)
+            // COALESCE handles NULL values in label field
+            $conditions[] = '(COALESCE(label, \'\') LIKE :query_label OR original_url LIKE :query_url OR short_code LIKE :query_code)';
+            $params['query_label'] = $searchTerm;
+            $params['query_url'] = $searchTerm;
+            $params['query_code'] = $searchTerm;
         }
         
         // Status filter

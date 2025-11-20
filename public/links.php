@@ -30,30 +30,52 @@ $search = trim($_GET['search'] ?? '');
 $dateFrom = $_GET['date_from'] ?? '';
 $dateTo = $_GET['date_to'] ?? '';
 
-// Get links
-if (!empty($search)) {
-    $links = $shortLinkRepo->searchByUser((int)$user['id'], $search, $perPage, $offset);
-    $totalLinks = count($shortLinkRepo->searchByUser((int)$user['id'], $search, 1000, 0));
+// Normalize status filter - use null for 'all' to match repository method signature
+$statusFilter = ($status === 'all') ? null : $status;
+$searchFilter = (!empty($search)) ? $search : null;
+$dateFromFilter = (!empty($dateFrom)) ? $dateFrom : null;
+$dateToFilter = (!empty($dateTo)) ? $dateTo : null;
+
+// Initialize variables
+$links = [];
+$totalLinks = 0;
+
+try {
+    // Get links using the repository method that handles all filters at database level
+    $links = $shortLinkRepo->searchByUserWithFilters(
+        (int)$user['id'],
+        $searchFilter,
+        $statusFilter,
+        $dateFromFilter,
+        $dateToFilter,
+        $perPage,
+        $offset
+    );
+
+    // Get total count with same filters
+    $totalLinks = $shortLinkRepo->countByUserWithFilters(
+        (int)$user['id'],
+        $searchFilter,
+        $statusFilter,
+        $dateFromFilter,
+        $dateToFilter
+    );
+} catch (\Throwable $e) {
+    error_log('Links page error: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
+    $links = [];
+    $totalLinks = 0;
+}
+
+// Ensure $links is always an array and properly indexed
+if (!is_array($links)) {
+    $links = [];
 } else {
-    $links = $shortLinkRepo->findByUserId((int)$user['id'], $perPage, $offset);
-    $totalLinks = $shortLinkRepo->countByUserId((int)$user['id']);
+    // Re-index array to ensure sequential keys (in case of any filtering issues)
+    $links = array_values($links);
 }
 
-// Filter by status
-if ($status !== 'all') {
-    $links = array_filter($links, function($link) use ($status) {
-        if ($status === 'active') {
-            return $link['is_active'] == 1 && ($link['expires_at'] === null || strtotime($link['expires_at']) > time());
-        } elseif ($status === 'expired') {
-            return $link['expires_at'] !== null && strtotime($link['expires_at']) <= time();
-        } elseif ($status === 'inactive') {
-            return $link['is_active'] == 0;
-        }
-        return true;
-    });
-}
-
-$totalPages = ceil($totalLinks / $perPage);
+$totalPages = max(1, (int)ceil($totalLinks / $perPage));
 
 $pageTitle = t('links.manage');
 $navLinksLeft = [

@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
 
+// Configure error logging to gforms_error.log
+$errorLogPath = __DIR__ . '/../gforms_error.log';
+if (is_writable(dirname($errorLogPath)) || file_exists($errorLogPath)) {
+    ini_set('error_log', $errorLogPath);
+}
+
 // Load .env file if it exists
 $envFile = __DIR__ . '/../.env';
 if (file_exists($envFile) && is_readable($envFile)) {
