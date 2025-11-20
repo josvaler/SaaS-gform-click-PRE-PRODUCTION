@@ -233,6 +233,11 @@ require __DIR__ . '/../views/partials/header.php';
                         <strong>Subject:</strong> Privacy Policy Inquiry
                     </p>
 
+                    <h2 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem;">15. Trademark Disclaimer</h2>
+                    <p style="font-size: 0.95rem; color: var(--color-text-muted); font-style: italic;">
+                        <?= t('legal.disclaimer') ?>
+                    </p>
+
                 </div>
             </div>
         </div>

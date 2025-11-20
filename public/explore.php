@@ -10,6 +10,12 @@ $user = session_user();
 $pdo = db();
 $shortLinkRepo = new ShortLinkRepository($pdo);
 
+// Check user plan
+$currentPlan = ($user['plan'] ?? 'FREE');
+$isPremium = ($currentPlan === 'PREMIUM');
+$isEnterprise = ($currentPlan === 'ENTERPRISE');
+$canManageLinks = ($isPremium || $isEnterprise);
+
 // Pagination
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 20;
@@ -196,20 +202,22 @@ require __DIR__ . '/../views/partials/header.php';
                                         </td>
                                         <td style="padding: 0.75rem;">
                                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                                <?php if ($code): ?>
+                                                <?php if ($code && $canManageLinks): ?>
                                                     <a href="/link/<?= html($code) ?>" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;" title="<?= t('common.view') ?>">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 <?php endif; ?>
-                                                <button 
-                                                    class="btn btn-outline toggle-link-btn" 
-                                                    data-link-id="<?= $linkId ?>"
-                                                    data-current-status="<?= $link['is_active'] ?>"
-                                                    style="padding: 0.25rem 0.75rem; font-size: 0.8rem;"
-                                                    title="<?= $link['is_active'] == 1 ? t('explore.toggle_deactivate') : t('explore.toggle_activate') ?>"
-                                                >
-                                                    <i class="fas fa-<?= $link['is_active'] == 1 ? 'toggle-on' : 'toggle-off' ?>"></i>
-                                                </button>
+                                                <?php if ($canManageLinks): ?>
+                                                    <button 
+                                                        class="btn btn-outline toggle-link-btn" 
+                                                        data-link-id="<?= $linkId ?>"
+                                                        data-current-status="<?= $link['is_active'] ?>"
+                                                        style="padding: 0.25rem 0.75rem; font-size: 0.8rem;"
+                                                        title="<?= $link['is_active'] == 1 ? t('explore.toggle_deactivate') : t('explore.toggle_activate') ?>"
+                                                    >
+                                                        <i class="fas fa-<?= $link['is_active'] == 1 ? 'toggle-on' : 'toggle-off' ?>"></i>
+                                                    </button>
+                                                <?php endif; ?>
                                                 <button 
                                                     class="btn btn-outline delete-link-btn" 
                                                     data-link-id="<?= $linkId ?>"

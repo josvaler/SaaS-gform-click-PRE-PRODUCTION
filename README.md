@@ -189,3 +189,7 @@ Jose Luis Valerio - jose.luis.valerio@gmail.com
 - Built on PHP 8.x
 - Uses Google API Client for OAuth
 - Stripe PHP SDK (pending integration)
+
+## ⚖️ Legal Disclaimer
+
+**Google Forms is a trademark of Google LLC. VVAIStudio has no association with Google.**

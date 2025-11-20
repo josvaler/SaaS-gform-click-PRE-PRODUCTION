@@ -13,6 +13,9 @@
             <p style="font-size: 0.85rem; color: var(--color-text-muted); text-align: center;">
             © VVAIStudio.com, 2025-2026 | Built with ❤️
             </p>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted); text-align: center; margin-top: 0.75rem; opacity: 0.8;">
+                <?= t('legal.disclaimer') ?>
+            </p>
         </div>
     </footer>
     <script src="/assets/js/app.js"></script>

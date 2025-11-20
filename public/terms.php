@@ -86,6 +86,11 @@ require __DIR__ . '/../views/partials/header.php';
                     <h2 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem;">15. Contact Information</h2>
                     <p>If you have any questions about these Terms, please contact us at: <a href="mailto:support@gformus.link" style="color: var(--color-primary);">support@gformus.link</a></p>
 
+                    <h2 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.5rem;">16. Trademark Disclaimer</h2>
+                    <p style="font-size: 0.95rem; color: var(--color-text-muted); font-style: italic;">
+                        <?= t('legal.disclaimer') ?>
+                    </p>
+
                 </div>
             </div>
         </div>
