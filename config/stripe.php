@@ -8,6 +8,7 @@ return [
     'secret_key' => env('STRIPE_SECRET_KEY', ''),
     'publishable_key' => env('STRIPE_PUBLISHABLE_KEY', ''),
     'price_id' => env('STRIPE_PRICE_ID', ''),
+    'price_id_year' => env('STRIPE_PRICE_ID_YEAR', ''),
     'webhook_secret' => env('STRIPE_WEBHOOK_SECRET', ''),
     'success_url' => env('STRIPE_SUCCESS_URL', $baseUrl . '/billing?status=success'),
     'cancel_url' => env('STRIPE_CANCEL_URL', $baseUrl . '/billing?status=cancelled'),

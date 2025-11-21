@@ -291,11 +291,11 @@ require __DIR__ . '/../views/partials/header.php';
     </div>
 </div>
 
-<script src="/assets/js/explore.js"></script>
 <script>
-    // Pass CSRF token to JavaScript
+    // Pass CSRF token to JavaScript (must be set before explore.js loads)
     window.csrfToken = '<?= generate_csrf_token() ?>';
 </script>
+<script src="/assets/js/explore.js"></script>
 
 <?php require __DIR__ . '/../views/partials/footer.php'; ?>
 

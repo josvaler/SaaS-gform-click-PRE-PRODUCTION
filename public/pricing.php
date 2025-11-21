@@ -81,8 +81,27 @@ require __DIR__ . '/../views/partials/header.php';
                     </div>
                 </div>
                 <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1;">
-                    <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
-                        $4.99<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
+                    <!-- Billing Period Toggle -->
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(148, 163, 184, 0.1); border-radius: 0.75rem;">
+                        <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
+                            <input type="radio" name="premium_billing" value="monthly" checked class="premium-billing-toggle" style="margin-right: 0.5rem; cursor: pointer;">
+                            <?= t('pricing.billing_monthly') ?>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); position: relative;">
+                            <input type="radio" name="premium_billing" value="annual" class="premium-billing-toggle" style="margin-right: 0.5rem; cursor: pointer;">
+                            <?= t('pricing.billing_annual') ?>
+                            <span class="premium-discount-badge" style="display: none; margin-left: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.5rem; font-weight: 700;">20% OFF</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Price Display -->
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <div id="premium-price" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.25rem;">
+                            $1.99<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
+                        </div>
+                        <div id="premium-annual-savings" style="display: none; font-size: 0.85rem; color: #10b981; font-weight: 600;">
+                            Save $3.89 per year
+                        </div>
                     </div>
                     <ul style="list-style: none; padding: 0; margin-bottom: 2rem; flex: 1;">
                         <li style="padding: 0.5rem 0;">✓ <?= t('pricing.feature_600_links_month') ?></li>
@@ -98,12 +117,13 @@ require __DIR__ . '/../views/partials/header.php';
                         <?php if ($currentPlan === 'PREMIUM'): ?>
                             <div class="alert alert-success" style="padding: 0.75rem 1rem; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;"><?= t('pricing.current_plan') ?></div>
                         <?php elseif ($isLoggedIn): ?>
-                            <form action="/stripe/checkout" method="POST" style="margin: 0;">
+                            <form action="/stripe/checkout" method="POST" id="premium-checkout-form" style="margin: 0;">
                                 <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
-                                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem 1rem; min-height: 48px; font-weight: 600;"><?= t('pricing.start_now_premium') ?></button>
+                                <input type="hidden" name="billing_period" id="premium-billing-period" value="monthly">
+                                <button type="submit" id="premium-submit-button" class="btn btn-primary" style="width: 100%; padding: 0.75rem 1rem; min-height: 48px; font-weight: 600;"><?= t('pricing.start_now_premium') ?></button>
                             </form>
                         <?php else: ?>
-                            <a href="/login" class="btn btn-primary" style="width: 100%; padding: 0.75rem 1rem; min-height: 48px; display: flex; align-items: center; justify-content: center; font-weight: 600;"><?= t('pricing.start_now_premium') ?></a>
+                            <a href="/login" id="premium-login-link" class="btn btn-primary" style="width: 100%; padding: 0.75rem 1rem; min-height: 48px; display: flex; align-items: center; justify-content: center; font-weight: 600;"><?= t('pricing.start_now_premium') ?></a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -149,6 +169,84 @@ require __DIR__ . '/../views/partials/header.php';
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    
+    const perMonthText = <?= json_encode(t('pricing.per_month')) ?>;
+    const monthlyButtonText = <?= json_encode(t('pricing.start_now_premium')) ?>;
+    const annualButtonText = <?= json_encode(t('pricing.start_saving_annual')) ?>;
+    const billingToggles = document.querySelectorAll('.premium-billing-toggle');
+    const priceDisplay = document.getElementById('premium-price');
+    const savingsDisplay = document.getElementById('premium-annual-savings');
+    const discountBadge = document.querySelector('.premium-discount-badge');
+    const billingPeriodInput = document.getElementById('premium-billing-period');
+    const submitButton = document.getElementById('premium-submit-button');
+    const loginLink = document.getElementById('premium-login-link');
+    
+    if (!billingToggles.length || !priceDisplay || !billingPeriodInput) {
+        return; // Elements not found, exit
+    }
+    
+    function updatePricing(billingPeriod) {
+        if (billingPeriod === 'annual') {
+            // Annual pricing: $19.99/year
+            priceDisplay.innerHTML = '$19.99<span style="font-size: 1rem; color: var(--color-text-muted);">/year</span>';
+            if (savingsDisplay) {
+                savingsDisplay.style.display = 'block';
+            }
+            if (discountBadge) {
+                discountBadge.style.display = 'inline-block';
+            }
+            if (billingPeriodInput) {
+                billingPeriodInput.value = 'annual';
+            }
+            // Update button text for annual
+            if (submitButton) {
+                submitButton.textContent = annualButtonText;
+            }
+            if (loginLink) {
+                loginLink.textContent = annualButtonText;
+            }
+        } else {
+            // Monthly pricing: $1.99/month
+            priceDisplay.innerHTML = '$1.99<span style="font-size: 1rem; color: var(--color-text-muted);">' + perMonthText + '</span>';
+            if (savingsDisplay) {
+                savingsDisplay.style.display = 'none';
+            }
+            if (discountBadge) {
+                discountBadge.style.display = 'none';
+            }
+            if (billingPeriodInput) {
+                billingPeriodInput.value = 'monthly';
+            }
+            // Update button text for monthly
+            if (submitButton) {
+                submitButton.textContent = monthlyButtonText;
+            }
+            if (loginLink) {
+                loginLink.textContent = monthlyButtonText;
+            }
+        }
+    }
+    
+    // Add event listeners to all toggle radio buttons
+    billingToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                updatePricing(this.value);
+            }
+        });
+    });
+    
+    // Initialize with monthly (default)
+    const defaultToggle = document.querySelector('.premium-billing-toggle[value="monthly"]');
+    if (defaultToggle && defaultToggle.checked) {
+        updatePricing('monthly');
+    }
+});
+</script>
 
 <?php require __DIR__ . '/../views/partials/footer.php'; ?>
 

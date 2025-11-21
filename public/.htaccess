@@ -8,6 +8,12 @@ RewriteRule ^regenerate-qr$ regenerate-qr.php [L,QSA]
 # --- Link details route ---
 RewriteRule ^link/([a-zA-Z0-9_-]+)$ link-details.php?code=$1 [L,QSA]
 
+# --- Stripe webhook route - allow direct .php access ---
+# Allow direct access to webhook.php (Stripe uses .php extension)
+RewriteRule ^stripe/webhook\.php$ stripe/webhook.php [L,QSA]
+# Also allow clean URL for backward compatibility
+RewriteRule ^stripe/webhook$ stripe/webhook.php [L,QSA]
+
 # --- Quitar .php de las URLs ---
 # Si el archivo existe con .php, servirlo sin mostrar la extensión
 RewriteCond %{REQUEST_FILENAME}.php -f
