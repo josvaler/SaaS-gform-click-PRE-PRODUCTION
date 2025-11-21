@@ -200,6 +200,7 @@ return [
     'pricing.per_month' => '/mes',
     'pricing.custom' => 'A medida',
     'pricing.current_plan' => 'Plan Actual',
+    'pricing.highest_plan' => 'Ya tienes el plan más alto',
     'pricing.start_free' => 'Empezar Gratis',
     'pricing.upgrade_premium' => 'Actualizar a Premium',
     'pricing.start_premium' => 'Comenzar Premium',

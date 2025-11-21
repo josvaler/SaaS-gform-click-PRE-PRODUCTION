@@ -200,6 +200,7 @@ return [
     'pricing.per_month' => '/month',
     'pricing.custom' => 'Custom',
     'pricing.current_plan' => 'Current Plan',
+    'pricing.highest_plan' => 'You already have the highest plan',
     'pricing.start_free' => 'Start Free',
     'pricing.upgrade_premium' => 'Upgrade to Premium',
     'pricing.start_premium' => 'Start Premium',

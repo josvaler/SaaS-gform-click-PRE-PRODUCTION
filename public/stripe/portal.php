@@ -78,14 +78,14 @@ try {
                 $retryCount++;
                 $lastException = $e;
                 if ($retryCount < $maxRetries) {
-                    error_log("Stripe API connection error creating customer (attempt $retryCount/$maxRetries): " . $e->getMessage());
+                    debug_log("Stripe API connection error creating customer (attempt $retryCount/$maxRetries): " . $e->getMessage());
                     sleep(1);
                 }
             } catch (\Stripe\Exception\RateLimitException $e) {
                 $retryCount++;
                 $lastException = $e;
                 if ($retryCount < $maxRetries) {
-                    error_log("Stripe rate limit error creating customer (attempt $retryCount/$maxRetries): " . $e->getMessage());
+                    debug_log("Stripe rate limit error creating customer (attempt $retryCount/$maxRetries): " . $e->getMessage());
                     sleep(2);
                 }
             } catch (Throwable $e) {
@@ -140,14 +140,14 @@ try {
             $retryCount++;
             $lastException = $e;
             if ($retryCount < $maxRetries) {
-                error_log("Stripe API connection error creating portal session (attempt $retryCount/$maxRetries): " . $e->getMessage());
+                debug_log("Stripe API connection error creating portal session (attempt $retryCount/$maxRetries): " . $e->getMessage());
                 sleep(1);
             }
         } catch (\Stripe\Exception\RateLimitException $e) {
             $retryCount++;
             $lastException = $e;
             if ($retryCount < $maxRetries) {
-                error_log("Stripe rate limit error creating portal session (attempt $retryCount/$maxRetries): " . $e->getMessage());
+                debug_log("Stripe rate limit error creating portal session (attempt $retryCount/$maxRetries): " . $e->getMessage());
                 sleep(2);
             }
         } catch (Throwable $e) {

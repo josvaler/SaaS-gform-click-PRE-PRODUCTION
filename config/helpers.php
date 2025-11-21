@@ -173,3 +173,19 @@ function current_lang(): string
     return in_array($lang, ['en', 'es']) ? $lang : 'es';
 }
 
+/**
+ * Debug logging function - only logs if SYSTEM_CODE_DEBUG is enabled
+ * Use this for debug/informational logs that should be conditionally enabled
+ * Critical errors should still use error_log() directly
+ * 
+ * @param string $message The debug message to log
+ * @return void
+ */
+function debug_log(string $message): void
+{
+    $debugEnabled = env('SYSTEM_CODE_DEBUG', 'false');
+    if ($debugEnabled === 'true' || $debugEnabled === '1') {
+        error_log('[DEBUG] ' . $message);
+    }
+}
+

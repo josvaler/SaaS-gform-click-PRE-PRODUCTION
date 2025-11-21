@@ -121,7 +121,7 @@ try {
             $retryCount++;
             $lastException = $e;
             if ($retryCount < $maxRetries) {
-                error_log("Stripe API connection error (attempt $retryCount/$maxRetries): " . $e->getMessage());
+                debug_log("Stripe API connection error (attempt $retryCount/$maxRetries): " . $e->getMessage());
                 sleep(1); // Wait 1 second before retry
             }
         } catch (\Stripe\Exception\RateLimitException $e) {
@@ -129,7 +129,7 @@ try {
             $retryCount++;
             $lastException = $e;
             if ($retryCount < $maxRetries) {
-                error_log("Stripe rate limit error (attempt $retryCount/$maxRetries): " . $e->getMessage());
+                debug_log("Stripe rate limit error (attempt $retryCount/$maxRetries): " . $e->getMessage());
                 sleep(2); // Wait 2 seconds before retry
             }
         } catch (Throwable $e) {
@@ -145,8 +145,8 @@ try {
         $errorType = get_class($lastException);
         
         error_log("Stripe checkout error for billing period '$billingPeriod': $errorType - $errorMessage");
-        error_log("Price ID used: $priceId");
-        error_log("Secret key prefix: " . substr($secretKey, 0, 7) . "...");
+        debug_log("Price ID used: $priceId");
+        debug_log("Secret key prefix: " . substr($secretKey, 0, 7) . "...");
         
         // Check for specific error types
         if ($lastException instanceof \Stripe\Exception\AuthenticationException) {

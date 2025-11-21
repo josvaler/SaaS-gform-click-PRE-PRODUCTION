@@ -6,6 +6,7 @@ require __DIR__ . '/../config/bootstrap.php';
 $user = session_user();
 $currentPlan = $user ? ($user['plan'] ?? 'FREE') : 'FREE';
 $isLoggedIn = $user !== null;
+$isEnterprise = $currentPlan === 'ENTERPRISE';
 
 $pageTitle = t('pricing.title');
 $navLinksLeft = [
@@ -59,6 +60,8 @@ require __DIR__ . '/../views/partials/header.php';
                     <div style="margin-top: auto;">
                         <?php if ($currentPlan === 'FREE'): ?>
                             <div class="alert alert-info" style="padding: 0.75rem 1rem; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;"><?= t('pricing.current_plan') ?></div>
+                        <?php elseif ($isEnterprise): ?>
+                            <div class="alert alert-info" style="padding: 0.75rem 1rem; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center; opacity: 0.7;"><?= t('pricing.highest_plan') ?></div>
                         <?php elseif ($isLoggedIn): ?>
                             <a href="/dashboard" class="btn btn-outline" style="width: 100%; padding: 0.75rem 1rem; min-height: 48px; display: flex; align-items: center; justify-content: center; font-weight: 600;"><?= t('pricing.continue_free') ?></a>
                         <?php else: ?>
@@ -82,6 +85,7 @@ require __DIR__ . '/../views/partials/header.php';
                 </div>
                 <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1;">
                     <!-- Billing Period Toggle -->
+                    <?php if (!$isEnterprise): ?>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(148, 163, 184, 0.1); border-radius: 0.75rem;">
                         <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
                             <input type="radio" name="premium_billing" value="monthly" checked class="premium-billing-toggle" style="margin-right: 0.5rem; cursor: pointer;">
@@ -93,6 +97,7 @@ require __DIR__ . '/../views/partials/header.php';
                             <span class="premium-discount-badge" style="display: none; margin-left: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.5rem; font-weight: 700;">20% OFF</span>
                         </label>
                     </div>
+                    <?php endif; ?>
                     
                     <!-- Price Display -->
                     <div style="text-align: center; margin-bottom: 1rem;">
@@ -116,6 +121,8 @@ require __DIR__ . '/../views/partials/header.php';
                     <div style="margin-top: auto;">
                         <?php if ($currentPlan === 'PREMIUM'): ?>
                             <div class="alert alert-success" style="padding: 0.75rem 1rem; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;"><?= t('pricing.current_plan') ?></div>
+                        <?php elseif ($isEnterprise): ?>
+                            <div class="alert alert-info" style="padding: 0.75rem 1rem; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center; opacity: 0.7;"><?= t('pricing.highest_plan') ?></div>
                         <?php elseif ($isLoggedIn): ?>
                             <form action="/stripe/checkout" method="POST" id="premium-checkout-form" style="margin: 0;">
                                 <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">

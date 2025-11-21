@@ -121,7 +121,7 @@ $link = $linkData;
                     <?php
                     // STEP 1: Check if QR path exists in database
                     // First, verify $link still has the data
-                    error_log("QR Template Debug - Link keys: " . implode(', ', array_keys($link ?? [])) . ", qr_code_path exists: " . (isset($link['qr_code_path']) ? 'YES' : 'NO'));
+                    debug_log("QR Template Debug - Link keys: " . implode(', ', array_keys($link ?? [])) . ", qr_code_path exists: " . (isset($link['qr_code_path']) ? 'YES' : 'NO'));
                     
                     $qrPathInDb = null;
                     $hasQrPathInDb = false;
@@ -148,7 +148,7 @@ $link = $linkData;
                     }
                     
                     // Debug logging
-                    error_log("QR Check Debug - Link ID: " . ($link['id'] ?? 'N/A') . 
+                    debug_log("QR Check Debug - Link ID: " . ($link['id'] ?? 'N/A') . 
                         " | Has qr_code_path key: " . (array_key_exists('qr_code_path', $link) ? 'YES' : 'NO') .
                         " | qr_code_path value: " . var_export($link['qr_code_path'] ?? 'NOT SET', true) .
                         " | qrPathInDb: " . var_export($qrPathInDb, true) .
@@ -168,10 +168,8 @@ $link = $linkData;
                             QR code no disponible.
                             <?php if (!$hasQrPathInDb || !$qrPathInDb): ?>
                                 <br><small style="font-size: 0.875rem;">No hay ruta de QR en la base de datos.</small>
-                                <br><small style="font-size: 0.75rem; color: #666;">Debug: hasQrPathInDb=<?= $hasQrPathInDb ? 'YES' : 'NO' ?>, qrPathInDb=<?= html(var_export($qrPathInDb, true)) ?>, qr_code_path=<?= html(var_export($link['qr_code_path'] ?? 'NOT SET', true)) ?></small>
                             <?php elseif (!$qrFileExists): ?>
                                 <br><small style="font-size: 0.875rem;">El archivo QR no existe en el sistema de archivos.</small>
-                                <br><small style="font-size: 0.75rem; color: #666;">Debug: Ruta esperada = <?= html($qrFilePath ?? 'N/A') ?>, File exists check = <?= file_exists($qrFilePath ?? '') ? 'YES' : 'NO' ?></small>
                             <?php endif; ?>
                         </p>
                         <a href="/regenerate-qr?code=<?= html($shortCode) ?>" class="btn btn-primary" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">Generar QR Code</a>
@@ -331,6 +329,14 @@ $link = $linkData;
 </section>
 
 <script>
+// Debug logging function - only logs if SYSTEM_CODE_DEBUG is enabled
+const SYSTEM_CODE_DEBUG = <?= json_encode(env('SYSTEM_CODE_DEBUG', 'false') === 'true' || env('SYSTEM_CODE_DEBUG', 'false') === '1') ?>;
+function debugLog(...args) {
+    if (SYSTEM_CODE_DEBUG) {
+        console.log('[DEBUG]', ...args);
+    }
+}
+
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
         alert('URL copiada al portapapeles');
@@ -339,7 +345,7 @@ function copyToClipboard(text) {
 
 // Tab switching functionality - define immediately and make globally accessible
 window.switchTab = function(tabName) {
-    console.log('Switching to tab:', tabName);
+    debugLog('Switching to tab:', tabName);
     
     // Hide all tab contents
     const tabContents = document.querySelectorAll('.tab-content');
@@ -360,8 +366,8 @@ window.switchTab = function(tabName) {
     const selectedTab = document.getElementById('tab-' + tabName);
     const selectedButton = document.getElementById('tab-button-' + tabName);
     
-    console.log('Selected tab element:', selectedTab);
-    console.log('Selected button element:', selectedButton);
+    debugLog('Selected tab element:', selectedTab);
+    debugLog('Selected button element:', selectedButton);
     
     if (selectedTab && selectedButton) {
         selectedTab.classList.add('active');
@@ -370,12 +376,12 @@ window.switchTab = function(tabName) {
         selectedButton.classList.add('active');
         selectedButton.setAttribute('aria-selected', 'true');
         
-        console.log('Tab switched successfully');
+        debugLog('Tab switched successfully');
         
         // If switching to analytics tab, ensure chart is properly rendered
         if (tabName === 'analytics') {
             setTimeout(() => {
-                console.log('Initializing chart for analytics tab');
+                debugLog('Initializing chart for analytics tab');
                 // Initialize chart if it doesn't exist
                 if (typeof chartInstance === 'undefined' || chartInstance === null) {
                     if (typeof initializeChart === 'function') {
@@ -399,30 +405,30 @@ window.switchTab = function(tabName) {
             }, 150);
         }
     } else {
-        console.error('Tab elements not found:', { selectedTab, selectedButton });
+        debugLog('Tab elements not found:', { selectedTab, selectedButton });
     }
 };
 
 // Initialize tabs on page load
 (function() {
     function initTabs() {
-        console.log('Initializing tabs');
+        debugLog('Initializing tabs');
         
         // Add click handlers to tab buttons
         const tabButtons = document.querySelectorAll('.tab-button');
-        console.log('Found tab buttons:', tabButtons.length);
+        debugLog('Found tab buttons:', tabButtons.length);
         tabButtons.forEach(button => {
             const tabName = button.getAttribute('data-tab');
-            console.log('Attaching listener to button:', tabName);
+            debugLog('Attaching listener to button:', tabName);
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 const tabName = this.getAttribute('data-tab');
-                console.log('Button clicked, tab name:', tabName);
+                debugLog('Button clicked, tab name:', tabName);
                 if (tabName && typeof window.switchTab === 'function') {
                     window.switchTab(tabName);
                 } else {
-                    console.error('switchTab function not available or invalid tab name');
+                    debugLog('switchTab function not available or invalid tab name');
                 }
             });
         });
@@ -568,19 +574,19 @@ function formatDate(dateStr) {
 
 function initializeChart() {
     if (typeof Chart === 'undefined') {
-        console.warn('Chart.js not loaded');
+        debugLog('Chart.js not loaded');
         return;
     }
     
     const chartCanvas = document.getElementById('dailyChart');
     if (!chartCanvas) {
-        console.warn('Chart canvas not found');
+        debugLog('Chart canvas not found');
         return;
     }
     
     // Check if data is available
     if (!dailyData || dailyData.length === 0) {
-        console.warn('No chart data available');
+        debugLog('No chart data available');
         return;
     }
     

@@ -57,7 +57,7 @@ if ($googleSdkAvailable) {
             // Log state for debugging with cookie info
             $cookieName = session_name();
             $cookieValue = $_COOKIE[$cookieName] ?? 'NOT SET';
-            error_log('OAuth start - State: ' . $state . ', Session ID: ' . session_id() . ', Cookie: ' . $cookieValue . ', Domain: ' . session_get_cookie_params()['domain']);
+            debug_log('OAuth start - State: ' . $state . ', Session ID: ' . session_id() . ', Cookie: ' . $cookieValue . ', Domain: ' . session_get_cookie_params()['domain']);
             
             // Verify state is in session before proceeding
             if (!isset($_SESSION['oauth_state']) || $_SESSION['oauth_state'] !== $state) {
@@ -77,23 +77,23 @@ if ($googleSdkAvailable) {
                             session_start();
                         }
                         $authError = 'OAuth state not included in authorization URL. Please try again.';
-                        error_log('OAuth URL missing state parameter: ' . substr($authUrl, 0, 200));
+                        debug_log('OAuth URL missing state parameter: ' . substr($authUrl, 0, 200));
                     } elseif (empty($authUrl)) {
                         // Restart session if we're not redirecting
                         if (session_status() === PHP_SESSION_NONE) {
                             session_start();
                         }
                         $authError = 'Failed to generate Google OAuth URL. Please check your configuration.';
-                        error_log('Google OAuth URL generation failed - client_id: ' . substr($client->getClientId(), 0, 30) . '...');
+                        debug_log('Google OAuth URL generation failed - client_id: ' . substr($client->getClientId(), 0, 30) . '...');
                     } else {
                         // Log the auth URL (without sensitive data) and session info
-                        error_log('OAuth redirect URL: ' . preg_replace('/(client_secret|code)=[^&]+/', '$1=***', $authUrl));
-                        error_log('OAuth redirect - Session ID: ' . session_id() . ', Cookie: ' . session_name() . '=' . session_id());
+                        debug_log('OAuth redirect URL: ' . preg_replace('/(client_secret|code)=[^&]+/', '$1=***', $authUrl));
+                        debug_log('OAuth redirect - Session ID: ' . session_id() . ', Cookie: ' . session_name() . '=' . session_id());
                         
                         // Parse URL to verify state is present
                         $urlParts = parse_url($authUrl);
                         parse_str($urlParts['query'] ?? '', $params);
-                        error_log('OAuth redirect - State in URL: ' . ($params['state'] ?? 'MISSING'));
+                        debug_log('OAuth redirect - State in URL: ' . ($params['state'] ?? 'MISSING'));
                         
                         // Use direct header redirect to ensure clean session closure
                         header('Location: ' . $authUrl);
@@ -117,17 +117,17 @@ if ($googleSdkAvailable) {
             }
             
             // Log all GET parameters for debugging
-            error_log('OAuth callback - GET params: ' . print_r($_GET, true));
-            error_log('OAuth callback - Session ID: ' . session_id());
-            error_log('OAuth callback - Session name: ' . session_name());
-            error_log('OAuth callback - Cookie: ' . (isset($_COOKIE[session_name()]) ? $_COOKIE[session_name()] : 'NOT SET'));
+            debug_log('OAuth callback - GET params: ' . print_r($_GET, true));
+            debug_log('OAuth callback - Session ID: ' . session_id());
+            debug_log('OAuth callback - Session name: ' . session_name());
+            debug_log('OAuth callback - Cookie: ' . (isset($_COOKIE[session_name()]) ? $_COOKIE[session_name()] : 'NOT SET'));
             
             $state = $_GET['state'] ?? '';
             $sessionState = $_SESSION['oauth_state'] ?? null;
             
             // Debug logging
-            error_log('OAuth callback - Received state: ' . ($state ?: 'EMPTY') . ', Session state: ' . ($sessionState ?: 'EMPTY'));
-            error_log('OAuth callback - Session data: ' . print_r($_SESSION, true));
+            debug_log('OAuth callback - Received state: ' . ($state ?: 'EMPTY') . ', Session state: ' . ($sessionState ?: 'EMPTY'));
+            debug_log('OAuth callback - Session data: ' . print_r($_SESSION, true));
             
             // If state is empty from Google, check if it's a session persistence issue
             if (empty($state) && empty($sessionState)) {
