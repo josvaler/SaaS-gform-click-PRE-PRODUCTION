@@ -278,6 +278,17 @@ return [
     'billing.customer_missing' => 'No encontramos tu suscripción existente en Stripe. Por favor, contacta con soporte antes de intentar actualizar de nuevo.',
     'billing.enterprise_plan' => 'Plan Enterprise',
     'billing.enterprise_message' => 'Tienes acceso ilimitado a todas las funciones. Para gestionar tu contrato, contacta con nuestro equipo de ventas.',
+    
+    // Promotional banners
+    'promo.banner_text' => 'OFERTA DE LANZAMIENTO: Ahorra 60% - Solo primeros 1000 usuarios',
+    'promo.banner_badge' => 'Precio congelado por 1 año',
+    'promo.view_offer' => 'Ver Oferta',
+    'promo.early_bird_title' => 'Early Bird Special',
+    'promo.early_bird_desc' => 'Los primeros 1000 usuarios conservan este precio por 1 año completo',
+    'promo.early_bird_badge' => 'Early Bird',
+    'promo.slots_remaining' => 'cupos restantes',
+    'promo.claim_offer' => 'Aprovechar Oferta',
+    'promo.save_per_year_early_bird' => 'Ahorra $30/año con Early Bird',
     'billing.contact_support' => 'Contactar Soporte',
     'billing.premium_description' => 'Premium desbloquea acceso ilimitado a todas las funciones, procesamiento prioritario y soporte personalizado.',
     'billing.upgrade_premium' => 'Actualizar a Premium con Stripe',

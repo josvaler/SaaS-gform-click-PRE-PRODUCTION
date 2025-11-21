@@ -1642,6 +1642,90 @@ code {
     transition: all 0.3s ease;
 }
 
+/* Early Bird Promotion Banners */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 6px 30px rgba(251, 191, 36, 0.6);
+        transform: scale(1.05);
+    }
+}
+
+.early-bird-banner {
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.early-bird-badge .badge-minimized:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 30px rgba(251, 191, 36, 0.6);
+}
+
+.early-bird-badge .badge-expanded {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsive for Early Bird Banners */
+@media (max-width: 768px) {
+    .early-bird-banner {
+        font-size: 0.8rem !important;
+        padding: 0.625rem 0.75rem !important;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .early-bird-banner > div:first-child {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .early-bird-banner > div:first-child > span:last-child {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .early-bird-badge {
+        bottom: 1rem !important;
+        right: 1rem !important;
+    }
+    
+    .early-bird-badge .badge-minimized {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .early-bird-badge .badge-expanded {
+        min-width: 180px !important;
+        max-width: 240px !important;
+        padding: 1rem !important;
+    }
+}
+
 .feature-badge {
     transition: all 0.3s ease;
 }

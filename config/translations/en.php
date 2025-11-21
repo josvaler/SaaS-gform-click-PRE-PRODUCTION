@@ -278,6 +278,17 @@ return [
     'billing.customer_missing' => 'We didn\'t find your existing subscription in Stripe. Please contact support before trying to update again.',
     'billing.enterprise_plan' => 'Enterprise Plan',
     'billing.enterprise_message' => 'You have unlimited access to all features. To manage your contract, contact our sales team.',
+    
+    // Promotional banners
+    'promo.banner_text' => 'LAUNCH OFFER: Save 60% - First 1000 users only',
+    'promo.banner_badge' => 'Price locked for 1 year',
+    'promo.view_offer' => 'View Offer',
+    'promo.early_bird_title' => 'Early Bird Special',
+    'promo.early_bird_desc' => 'First 1000 users keep this price for a full year',
+    'promo.early_bird_badge' => 'Early Bird',
+    'promo.slots_remaining' => 'slots remaining',
+    'promo.claim_offer' => 'Claim Offer',
+    'promo.save_per_year_early_bird' => 'Save $30/year with Early Bird',
     'billing.contact_support' => 'Contact Support',
     'billing.premium_description' => 'Premium unlocks unlimited access to all features, priority processing, and personalized support.',
     'billing.upgrade_premium' => 'Upgrade to Premium with Stripe',

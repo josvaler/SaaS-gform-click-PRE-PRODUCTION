@@ -22,9 +22,49 @@ $navLinksRight = $isLoggedIn
     ];
 
 require __DIR__ . '/../views/partials/header.php';
+
+// Get Early Bird promotion data
+$earlyBirdData = get_early_bird_count();
+$promotionsEnabled = env('GFORMS_PROMOTIONS', 'false') === 'true';
+$currentPlan = $user ? ($user['plan'] ?? 'FREE') : 'FREE';
+$showPromotion = $promotionsEnabled && $earlyBirdData['is_available'] && $currentPlan !== 'PREMIUM';
 ?>
 
-<section class="hero" style="padding: 4rem 0; background: linear-gradient(to bottom right, #0f172a, #1e293b);">
+<?php if ($showPromotion): ?>
+<!-- Early Bird Sticky Banner -->
+<div id="early-bird-banner" class="early-bird-banner" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1f2937; padding: 0.75rem 1rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; justify-content: center; gap: 1rem; font-size: 0.9rem; font-weight: 600;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center; max-width: 1200px;">
+        <span style="font-size: 1.2rem;">🔥</span>
+        <span><?= t('promo.banner_text') ?></span>
+        <span style="background: rgba(31, 41, 55, 0.1); padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-weight: 700; white-space: nowrap;"><?= t('promo.banner_badge') ?></span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <a href="/pricing" class="btn" style="background: #1f2937; color: white; padding: 0.5rem 1.25rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.85rem; font-weight: 600; white-space: nowrap; transition: all 0.2s;"><?= t('promo.view_offer') ?></a>
+        <button id="close-banner" style="background: transparent; border: none; color: #1f2937; font-size: 1.5rem; cursor: pointer; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
+    </div>
+</div>
+
+<!-- Early Bird Floating Badge -->
+<div id="early-bird-badge" class="early-bird-badge" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 999; cursor: pointer;">
+    <div class="badge-minimized" style="width: 60px; height: 60px; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4); transition: all 0.3s ease; animation: pulse-glow 3s ease-in-out infinite;">
+        <span style="font-size: 1.5rem;">🔥</span>
+    </div>
+    <div class="badge-expanded" style="display: none; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 1rem; padding: 1.25rem; box-shadow: 0 8px 30px rgba(251, 191, 36, 0.4); min-width: 200px; max-width: 280px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.2rem;">🔥</span>
+            <button id="close-badge" style="background: transparent; border: none; color: #1f2937; font-size: 1.25rem; cursor: pointer; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
+        </div>
+        <div style="color: #1f2937; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem;"><?= t('promo.early_bird_title') ?></div>
+        <div style="color: #374151; font-size: 0.9rem; margin-bottom: 0.75rem;"><?= t('promo.early_bird_desc') ?></div>
+        <div id="badge-counter" style="background: rgba(31, 41, 55, 0.1); padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.95rem; color: #1f2937; text-align: center;">
+            <span id="remaining-count"><?= $earlyBirdData['remaining'] ?></span> <?= t('promo.slots_remaining') ?>
+        </div>
+        <a href="/pricing" style="display: block; margin-top: 0.75rem; background: #1f2937; color: white; padding: 0.625rem 1rem; border-radius: 0.5rem; text-decoration: none; font-size: 0.9rem; font-weight: 600; text-align: center; transition: all 0.2s;"><?= t('promo.claim_offer') ?></a>
+    </div>
+</div>
+<?php endif; ?>
+
+<section class="hero" style="padding: 4rem 0; background: linear-gradient(to bottom right, #0f172a, #1e293b); <?= $showPromotion ? 'margin-top: 60px;' : '' ?>">
     <div class="container" style="max-width: 1400px;">
         <div class="hero-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
             <!-- Left: Text Content -->
@@ -379,6 +419,106 @@ require __DIR__ . '/../views/partials/header.php';
         </div>
     </div>
 </section>
+<?php endif; ?>
+
+<?php if ($showPromotion): ?>
+<script>
+(function() {
+    'use strict';
+    
+    // Banner management
+    const banner = document.getElementById('early-bird-banner');
+    const closeBannerBtn = document.getElementById('close-banner');
+    const badge = document.getElementById('early-bird-badge');
+    const badgeMinimized = badge?.querySelector('.badge-minimized');
+    const badgeExpanded = badge?.querySelector('.badge-expanded');
+    const closeBadgeBtn = document.getElementById('close-badge');
+    const remainingCount = document.getElementById('remaining-count');
+    
+    // Check localStorage for dismissed state
+    const bannerDismissed = localStorage.getItem('earlyBirdBannerDismissed') === 'true';
+    const badgeDismissed = localStorage.getItem('earlyBirdBadgeDismissed') === 'true';
+    
+    // Auto-collapse banner after 5 seconds if not dismissed
+    if (banner && !bannerDismissed) {
+        setTimeout(() => {
+            if (banner && !localStorage.getItem('earlyBirdBannerDismissed')) {
+                banner.style.transform = 'translateY(-100%)';
+                banner.style.transition = 'transform 0.3s ease';
+            }
+        }, 5000);
+    } else if (banner && bannerDismissed) {
+        banner.style.display = 'none';
+    }
+    
+    // Hide badge if dismissed
+    if (badge && badgeDismissed) {
+        badge.style.display = 'none';
+    }
+    
+    // Close banner
+    if (closeBannerBtn) {
+        closeBannerBtn.addEventListener('click', function() {
+            if (banner) {
+                banner.style.transform = 'translateY(-100%)';
+                banner.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                }, 300);
+                localStorage.setItem('earlyBirdBannerDismissed', 'true');
+            }
+        });
+    }
+    
+    // Badge expand/collapse
+    if (badgeMinimized && badgeExpanded) {
+        let isExpanded = false;
+        
+        badgeMinimized.addEventListener('click', function() {
+            if (!isExpanded) {
+                badgeMinimized.style.display = 'none';
+                badgeExpanded.style.display = 'block';
+                isExpanded = true;
+            }
+        });
+        
+        if (closeBadgeBtn) {
+            closeBadgeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                badgeExpanded.style.display = 'none';
+                badgeMinimized.style.display = 'flex';
+                isExpanded = false;
+                localStorage.setItem('earlyBirdBadgeDismissed', 'true');
+                setTimeout(() => {
+                    if (badge) badge.style.display = 'none';
+                }, 300);
+            });
+        }
+    }
+    
+    // Update counter every 30 seconds
+    if (remainingCount) {
+        function updateCounter() {
+            fetch('/api/early-bird-count.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_available && remainingCount) {
+                        remainingCount.textContent = data.remaining;
+                    } else if (badge) {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating early bird counter: ' + error);
+                });
+        }
+        
+        // Update immediately and then every 30 seconds
+        updateCounter();
+        setInterval(updateCounter, 30000);
+    }
+})();
+</script>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../views/partials/footer.php'; ?>

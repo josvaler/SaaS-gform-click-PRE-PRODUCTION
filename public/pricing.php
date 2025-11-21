@@ -8,6 +8,11 @@ $currentPlan = $user ? ($user['plan'] ?? 'FREE') : 'FREE';
 $isLoggedIn = $user !== null;
 $isEnterprise = $currentPlan === 'ENTERPRISE';
 
+// Check Early Bird promotion
+$earlyBirdData = get_early_bird_count();
+$promotionsEnabled = env('GFORMS_PROMOTIONS', 'false') === 'true';
+$isEarlyBird = $promotionsEnabled && $earlyBirdData['is_available'];
+
 $pageTitle = t('pricing.title');
 $navLinksLeft = [
     ['label' => t('nav.home'), 'href' => '/'],
@@ -101,11 +106,25 @@ require __DIR__ . '/../views/partials/header.php';
                     
                     <!-- Price Display -->
                     <div style="text-align: center; margin-bottom: 1rem;">
+                        <?php if ($isEarlyBird): ?>
+                            <div style="margin-bottom: 0.5rem;">
+                                <span class="badge" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1f2937; font-size: 0.7rem; padding: 0.3rem 0.75rem; border-radius: 0.5rem; font-weight: 700;">🔥 <?= t('promo.early_bird_badge') ?></span>
+                            </div>
+                        <?php endif; ?>
                         <div id="premium-price" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.25rem;">
-                            $1.99<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
+                            <?php if ($isEarlyBird): ?>
+                                $1.99<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
+                                <div style="font-size: 0.75rem; color: var(--color-text-muted); text-decoration: line-through; margin-top: 0.25rem;">$4.99/mes</div>
+                            <?php else: ?>
+                                $4.99<span style="font-size: 1rem; color: var(--color-text-muted);"><?= t('pricing.per_month') ?></span>
+                            <?php endif; ?>
                         </div>
                         <div id="premium-annual-savings" style="display: none; font-size: 0.85rem; color: #10b981; font-weight: 600;">
-                            Save $3.89 per year
+                            <?php if ($isEarlyBird): ?>
+                                <?= t('promo.save_per_year_early_bird') ?>
+                            <?php else: ?>
+                                Save $3.89 per year
+                            <?php endif; ?>
                         </div>
                     </div>
                     <ul style="list-style: none; padding: 0; margin-bottom: 2rem; flex: 1;">
@@ -191,15 +210,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const billingPeriodInput = document.getElementById('premium-billing-period');
     const submitButton = document.getElementById('premium-submit-button');
     const loginLink = document.getElementById('premium-login-link');
+    const isEarlyBird = <?= json_encode($isEarlyBird) ?>;
     
-    if (!billingToggles.length || !priceDisplay || !billingPeriodInput) {
+    // Only check for essential elements - billingPeriodInput is optional (only exists when logged in)
+    if (!billingToggles.length || !priceDisplay) {
         return; // Elements not found, exit
     }
     
     function updatePricing(billingPeriod) {
         if (billingPeriod === 'annual') {
-            // Annual pricing: $19.99/year
-            priceDisplay.innerHTML = '$19.99<span style="font-size: 1rem; color: var(--color-text-muted);">/year</span>';
+            // Annual pricing
+            if (isEarlyBird) {
+                priceDisplay.innerHTML = '$19.99<span style="font-size: 1rem; color: var(--color-text-muted);">/year</span><div style="font-size: 0.75rem; color: var(--color-text-muted); text-decoration: line-through; margin-top: 0.25rem;">$49.99/año</div>';
+            } else {
+                priceDisplay.innerHTML = '$49.99<span style="font-size: 1rem; color: var(--color-text-muted);">/year</span>';
+            }
             if (savingsDisplay) {
                 savingsDisplay.style.display = 'block';
             }
@@ -217,8 +242,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 loginLink.textContent = annualButtonText;
             }
         } else {
-            // Monthly pricing: $1.99/month
-            priceDisplay.innerHTML = '$1.99<span style="font-size: 1rem; color: var(--color-text-muted);">' + perMonthText + '</span>';
+            // Monthly pricing
+            if (isEarlyBird) {
+                priceDisplay.innerHTML = '$1.99<span style="font-size: 1rem; color: var(--color-text-muted);">' + perMonthText + '</span><div style="font-size: 0.75rem; color: var(--color-text-muted); text-decoration: line-through; margin-top: 0.25rem;">$4.99/mes</div>';
+            } else {
+                priceDisplay.innerHTML = '$4.99<span style="font-size: 1rem; color: var(--color-text-muted);">' + perMonthText + '</span>';
+            }
             if (savingsDisplay) {
                 savingsDisplay.style.display = 'none';
             }

@@ -189,3 +189,51 @@ function debug_log(string $message): void
     }
 }
 
+/**
+ * Get Early Bird promotion count and availability
+ * Returns count of PREMIUM users and remaining slots (max 1000)
+ * 
+ * @return array{count: int, remaining: int, is_available: bool}
+ */
+function get_early_bird_count(): array
+{
+    // Check if promotions are enabled
+    $promotionsEnabled = env('GFORMS_PROMOTIONS', 'false') === 'true';
+    if (!$promotionsEnabled) {
+        return ['count' => 0, 'remaining' => 0, 'is_available' => false];
+    }
+    
+    try {
+        $pdo = db();
+        // Count PREMIUM users (first 1000 by subscription date)
+        // Use updated_at when plan changed to PREMIUM, or created_at if already PREMIUM
+        $statement = $pdo->query(
+            "SELECT COUNT(*) as count 
+             FROM (
+                 SELECT id 
+                 FROM users 
+                 WHERE plan = 'PREMIUM' 
+                 ORDER BY 
+                     CASE 
+                         WHEN updated_at > created_at THEN updated_at 
+                         ELSE created_at 
+                     END ASC
+                 LIMIT 1000
+             ) as premium_users"
+        );
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        $count = (int)($result['count'] ?? 0);
+        $remaining = max(0, 1000 - $count);
+        $isAvailable = $remaining > 0;
+        
+        return [
+            'count' => $count,
+            'remaining' => $remaining,
+            'is_available' => $isAvailable
+        ];
+    } catch (Throwable $e) {
+        error_log('Error getting early bird count: ' . $e->getMessage());
+        return ['count' => 0, 'remaining' => 0, 'is_available' => false];
+    }
+}
+
