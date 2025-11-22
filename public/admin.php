@@ -484,22 +484,6 @@ require __DIR__ . '/../views/partials/header.php';
                                 </div>
                             </div>
 
-                            <!-- Stripe Accordion -->
-                            <div class="accordion-item">
-                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-stripe" id="accordion-header-stripe">
-                                    <i class="fab fa-stripe" style="margin-right: 0.75rem;"></i>
-                                    <span><?= t('admin.diagnostics.stripe') ?></span>
-                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
-                                </button>
-                                <div class="accordion-content" id="accordion-stripe" aria-labelledby="accordion-header-stripe" aria-hidden="true">
-                                    <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Stripe diagnostics content will be displayed here.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Misc Accordion -->
                             <div class="accordion-item">
                                 <button class="accordion-header" aria-expanded="false" aria-controls="accordion-misc" id="accordion-header-misc">
