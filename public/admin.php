@@ -185,7 +185,7 @@ require __DIR__ . '/../views/partials/header.php';
                 <?php endif; ?>
 
                 <!-- Tab 1: Search -->
-                <div id="tab-search" class="tab-content active" role="tabpanel" aria-labelledby="tab-button-search" style="display: block;">
+                <div id="tab-search" class="tab-content active" role="tabpanel" aria-labelledby="tab-button-search">
 
             <!-- Search Section -->
             <div style="padding: 2rem; border-bottom: 1px solid var(--color-border, #334155);">
@@ -405,7 +405,7 @@ require __DIR__ . '/../views/partials/header.php';
                 </div>
 
                 <!-- Tab 2: Diagnostics -->
-                <div id="tab-diagnostics" class="tab-content" role="tabpanel" aria-labelledby="tab-button-diagnostics" style="display: none;">
+                <div id="tab-diagnostics" class="tab-content" role="tabpanel" aria-labelledby="tab-button-diagnostics">
                     <div style="padding: 2rem;">
                         <div class="accordion-container">
                             <!-- Connectivity Accordion -->
@@ -417,9 +417,7 @@ require __DIR__ . '/../views/partials/header.php';
                                 </button>
                                 <div class="accordion-content" id="accordion-connectivity" aria-labelledby="accordion-header-connectivity" aria-hidden="true">
                                     <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Connectivity diagnostics content will be displayed here.</p>
-                                        </div>
+                                        <?php require __DIR__ . '/../views/admin/diagnostics/server-ping.php'; ?>
                                     </div>
                                 </div>
                             </div>
@@ -449,9 +447,7 @@ require __DIR__ . '/../views/partials/header.php';
                                 </button>
                                 <div class="accordion-content" id="accordion-database" aria-labelledby="accordion-header-database" aria-hidden="true">
                                     <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Database diagnostics content will be displayed here.</p>
-                                        </div>
+                                        <?php require __DIR__ . '/../views/admin/diagnostics/database-health.php'; ?>
                                     </div>
                                 </div>
                             </div>
@@ -508,7 +504,7 @@ require __DIR__ . '/../views/partials/header.php';
                 </div>
 
                 <!-- Tab 3: Environment -->
-                <div id="tab-environment" class="tab-content" role="tabpanel" aria-labelledby="tab-button-environment" style="display: none;">
+                <div id="tab-environment" class="tab-content" role="tabpanel" aria-labelledby="tab-button-environment">
                     <div style="padding: 2rem;">
                         <div class="accordion-container">
                             <!-- .env Accordion -->
@@ -583,14 +579,17 @@ require __DIR__ . '/../views/partials/header.php';
 </section>
 
 <script>
-// Tab switching functionality - define immediately and make globally accessible
+// Tab switching functionality - define FIRST and make globally accessible
 window.switchTab = function(tabName) {
+    console.log('switchTab called with:', tabName);
+    
     // Hide all tab contents
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => {
         content.classList.remove('active');
         content.setAttribute('aria-hidden', 'true');
-        content.style.display = 'none';
+        // Remove inline styles that might interfere
+        content.style.display = '';
     });
     
     // Remove active class from all tab buttons
@@ -604,14 +603,76 @@ window.switchTab = function(tabName) {
     const selectedTab = document.getElementById('tab-' + tabName);
     const selectedButton = document.getElementById('tab-button-' + tabName);
     
+    console.log('Selected tab:', selectedTab);
+    console.log('Selected button:', selectedButton);
+    
     if (selectedTab && selectedButton) {
         selectedTab.classList.add('active');
         selectedTab.setAttribute('aria-hidden', 'false');
-        selectedTab.style.display = 'block';
+        selectedTab.style.display = '';
         selectedButton.classList.add('active');
         selectedButton.setAttribute('aria-selected', 'true');
+        
+        console.log('Tab switched successfully');
+        
+        // Re-initialize accordions after tab is shown (in case they're in a hidden tab)
+        setTimeout(function() {
+            if (typeof window.initAccordions === 'function') {
+                window.initAccordions();
+            }
+        }, 50);
+    } else {
+        console.error('Tab or button not found!', 'tab:', selectedTab, 'button:', selectedButton);
     }
 };
+
+// Accordion initialization function - make it globally accessible
+window.initAccordions = function() {
+    // Use event delegation on the document to handle all accordions
+    // This way we don't need to worry about duplicate handlers
+    if (!window.accordionInitialized) {
+        document.addEventListener('click', function(e) {
+            const header = e.target.closest('.accordion-header');
+            if (!header) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isExpanded = header.getAttribute('aria-expanded') === 'true';
+            const accordionId = header.getAttribute('aria-controls');
+            const accordionContent = document.getElementById(accordionId);
+            
+            if (!accordionContent) return;
+            
+            // Toggle current accordion
+            if (isExpanded) {
+                header.setAttribute('aria-expanded', 'false');
+                accordionContent.setAttribute('aria-hidden', 'true');
+            } else {
+                header.setAttribute('aria-expanded', 'true');
+                accordionContent.setAttribute('aria-hidden', 'false');
+            }
+        });
+        
+        window.accordionInitialized = true;
+    }
+    
+    // Ensure all accordions start collapsed
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    accordionHeaders.forEach(header => {
+        const accordionId = header.getAttribute('aria-controls');
+        const accordionContent = document.getElementById(accordionId);
+        
+        if (accordionContent) {
+            // Only set collapsed if not already set
+            if (!header.hasAttribute('aria-expanded')) {
+                header.setAttribute('aria-expanded', 'false');
+                accordionContent.setAttribute('aria-hidden', 'true');
+            }
+        }
+    });
+};
+
 
 // Initialize tabs on page load
 (function() {
@@ -637,19 +698,16 @@ window.switchTab = function(tabName) {
         
         if (searchTab) {
             searchTab.classList.add('active');
-            searchTab.style.display = 'block';
             searchTab.setAttribute('aria-hidden', 'false');
         }
         
         if (diagnosticsTab) {
             diagnosticsTab.classList.remove('active');
-            diagnosticsTab.style.display = 'none';
             diagnosticsTab.setAttribute('aria-hidden', 'true');
         }
         
         if (environmentTab) {
             environmentTab.classList.remove('active');
-            environmentTab.style.display = 'none';
             environmentTab.setAttribute('aria-hidden', 'true');
         }
         
@@ -669,51 +727,18 @@ window.switchTab = function(tabName) {
     }
 })();
 
-// Accordion functionality
+// Initialize accordions on page load
 (function() {
-    function initAccordions() {
-        const accordionHeaders = document.querySelectorAll('.accordion-header');
-        
-        // Ensure all accordions start collapsed
-        accordionHeaders.forEach(header => {
-            const accordionId = header.getAttribute('aria-controls');
-            const accordionContent = document.getElementById(accordionId);
-            
-            if (accordionContent) {
-                // Ensure collapsed state on init
-                header.setAttribute('aria-expanded', 'false');
-                accordionContent.setAttribute('aria-hidden', 'true');
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.initAccordions === 'function') {
+                window.initAccordions();
             }
         });
-        
-        // Add click handlers
-        accordionHeaders.forEach(header => {
-            header.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const isExpanded = this.getAttribute('aria-expanded') === 'true';
-                const accordionId = this.getAttribute('aria-controls');
-                const accordionContent = document.getElementById(accordionId);
-                
-                if (!accordionContent) return;
-                
-                // Toggle current accordion
-                if (isExpanded) {
-                    this.setAttribute('aria-expanded', 'false');
-                    accordionContent.setAttribute('aria-hidden', 'true');
-                } else {
-                    this.setAttribute('aria-expanded', 'true');
-                    accordionContent.setAttribute('aria-hidden', 'false');
-                }
-            });
-        });
-    }
-    
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAccordions);
     } else {
-        initAccordions();
+        if (typeof window.initAccordions === 'function') {
+            window.initAccordions();
+        }
     }
 })();
 </script>
