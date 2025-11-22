@@ -156,10 +156,14 @@ require __DIR__ . '/../views/partials/header.php';
 <section style="padding: 2rem 0; min-height: 80vh;">
     <div class="container" style="max-width: 1400px;">
         <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h2 style="margin: 0; font-size: 1.75rem; font-weight: 700;"><?= t('admin.title') ?></h2>
                 </div>
+                <button id="minitopBtn" class="minitop-button" onclick="openMiniTopModal()" title="Open Mini-TOP System Monitor">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Mini-TOP</span>
+                </button>
             </div>
 
             <!-- Tabs Container -->
@@ -771,6 +775,241 @@ window.initAccordions = function() {
         }
     }
 })();
+</script>
+
+<!-- Mini-TOP Modal -->
+<div id="minitopModal" class="minitop-modal" style="display: none;">
+    <div class="minitop-modal-overlay" onclick="closeMiniTopModal()"></div>
+    <div class="minitop-modal-container">
+        <div class="minitop-modal-header">
+            <h3>Mini-TOP System Monitor</h3>
+            <button class="minitop-modal-close" onclick="closeMiniTopModal()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="minitop-modal-body">
+            <iframe id="minitopIframe" src="/admin/mini-top.php" frameborder="0" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Mini-TOP Button Styles */
+.minitop-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    color: #0f172a;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(96, 165, 250, 0.3), 0 2px 4px -1px rgba(96, 165, 250, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.minitop-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.minitop-button:hover::before {
+    left: 100%;
+}
+
+.minitop-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(96, 165, 250, 0.4), 0 4px 6px -2px rgba(96, 165, 250, 0.3);
+}
+
+.minitop-button:active {
+    transform: translateY(0);
+}
+
+.minitop-button i {
+    font-size: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+    }
+}
+
+/* Mini-TOP Modal Styles */
+.minitop-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.minitop-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.minitop-modal-container {
+    position: relative;
+    width: 95%;
+    max-width: 1400px;
+    height: 90vh;
+    max-height: 900px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.minitop-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.minitop-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.minitop-modal-close {
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #e2e8f0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.minitop-modal-close:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.minitop-modal-body {
+    flex: 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+@media (max-width: 768px) {
+    .minitop-modal-container {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .minitop-button span {
+        display: none;
+    }
+    
+    .minitop-button {
+        padding: 0.75rem;
+        min-width: 2.5rem;
+    }
+}
+</style>
+
+<script>
+// Mini-TOP Modal Functions
+function openMiniTopModal() {
+    const modal = document.getElementById('minitopModal');
+    const iframe = document.getElementById('minitopIframe');
+    
+    if (modal && iframe) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Reload iframe to ensure fresh data
+        iframe.src = iframe.src;
+    }
+}
+
+function closeMiniTopModal() {
+    const modal = document.getElementById('minitopModal');
+    
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('minitopModal');
+        if (modal && modal.style.display !== 'none') {
+            closeMiniTopModal();
+        }
+    }
+});
 </script>
 
 <?php require __DIR__ . '/../views/partials/footer.php'; ?>

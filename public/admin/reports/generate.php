@@ -137,21 +137,53 @@ function generateStripeSyncReport(PDO $pdo, array $stripeConfig): array
         
         try {
             $customer = $stripe->customers->retrieve($user['stripe_customer_id']);
-            $subscriptions = $stripe->subscriptions->all([
+            
+            // Get all subscriptions for this customer (not filtered by status)
+            $allSubscriptions = $stripe->subscriptions->all([
                 'customer' => $user['stripe_customer_id'],
-                'limit' => 1
+                'limit' => 100
             ]);
             
             $stripePlan = 'NONE';
-            if (count($subscriptions->data) > 0) {
-                $sub = $subscriptions->data[0];
-                $stripePlan = $sub->status === 'active' ? 'PREMIUM' : $sub->status;
-                
-                if ($user['plan'] !== 'PREMIUM' && $sub->status === 'active') {
+            $hasActiveSubscription = false;
+            $activeSubscription = null;
+            
+            // Check all subscriptions for active/trialing ones
+            // We check all subscriptions (not just the stored one) in case there are multiple
+            foreach ($allSubscriptions->data as $sub) {
+                // Consider active and trialing as "active" for our purposes
+                // Note: past_due should NOT be considered active (webhook downgrades to FREE)
+                if (in_array($sub->status, ['active', 'trialing'])) {
+                    $hasActiveSubscription = true;
+                    $activeSubscription = $sub;
+                    $stripePlan = $sub->status === 'active' ? 'PREMIUM' : 'PREMIUM (TRIAL)';
+                    break; // Use the first active/trialing subscription found
+                }
+            }
+            
+            // If no active subscription found, show the most recent subscription status
+            // (or the stored subscription status if it exists)
+            if (!$hasActiveSubscription) {
+                if (count($allSubscriptions->data) > 0) {
+                    // Show the most recent subscription status
+                    $sub = $allSubscriptions->data[0];
+                    $stripePlan = $sub->status;
+                } elseif (!empty($user['stripe_subscription_id'])) {
+                    // Stored subscription ID exists but subscription not found in Stripe
+                    // This could mean it was deleted
+                    $stripePlan = 'NOT_FOUND';
+                }
+            }
+            
+            // Check for mismatches
+            if ($hasActiveSubscription) {
+                // User has active/trialing subscription in Stripe
+                if ($user['plan'] !== 'PREMIUM') {
                     $syncStatus = 'MISMATCH';
                     $issues[] = 'DB plan does not match Stripe active subscription';
                 }
             } else {
+                // No active subscription in Stripe
                 if ($user['plan'] === 'PREMIUM') {
                     $syncStatus = 'MISMATCH';
                     $issues[] = 'DB shows PREMIUM but no active Stripe subscription';

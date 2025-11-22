@@ -30,88 +30,115 @@ echo "<h1>Stripe Subscription Check</h1>\n";
 echo "<pre>\n";
 
 try {
-    // Get all users
-    $users = $pdo->query('SELECT id, email, google_id, plan, stripe_customer_id, stripe_subscription_id FROM users ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);
+    // Get all users with Stripe customer IDs
+    $users = $pdo->query('SELECT id, email, google_id, plan, stripe_customer_id, stripe_subscription_id FROM users WHERE stripe_customer_id IS NOT NULL ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);
     
-    echo "Found " . count($users) . " users in database\n\n";
-    
-    // Get recent Stripe customers (last 24 hours)
-    $recentCustomers = $stripe->customers->all([
-        'limit' => 100,
-        'created' => ['gte' => time() - 86400] // Last 24 hours
-    ]);
-    
-    echo "Found " . count($recentCustomers->data) . " Stripe customers created in last 24 hours\n\n";
+    echo "Found " . count($users) . " users with Stripe customer IDs in database\n\n";
     
     $updated = 0;
     $notFound = [];
+    $mismatches = [];
     
-    foreach ($recentCustomers->data as $customer) {
-        $email = $customer->email;
-        $customerId = $customer->id;
+    foreach ($users as $user) {
+        $email = $user['email'];
+        $customerId = $user['stripe_customer_id'];
         
-        echo "Checking customer: {$email} (ID: {$customerId})\n";
+        echo "Checking user: {$email} (Customer ID: {$customerId})\n";
+        echo "  Database plan: {$user['plan']}\n";
         
-        // Find user by email
-        $user = $userRepo->findByEmail($email);
-        
-        if (!$user) {
-            echo "  ⚠️  User not found in database for email: {$email}\n";
-            $notFound[] = ['email' => $email, 'customer_id' => $customerId];
-            continue;
-        }
-        
-        echo "  ✓ User found: ID={$user['id']}, Current plan={$user['plan']}\n";
-        
-        // Get subscriptions for this customer
-        $subscriptions = $stripe->subscriptions->all([
-            'customer' => $customerId,
-            'status' => 'active',
-            'limit' => 10
-        ]);
-        
-        if (count($subscriptions->data) > 0) {
-            $subscription = $subscriptions->data[0];
-            $subscriptionId = $subscription->id;
-            $planExpiration = gmdate('Y-m-d H:i:s', (int)$subscription->current_period_end);
+        try {
+            // Verify customer exists in Stripe
+            $customer = $stripe->customers->retrieve($customerId);
             
-            echo "  ✓ Active subscription found: {$subscriptionId}\n";
-            echo "  ✓ Plan expiration: {$planExpiration}\n";
+            // Get all subscriptions (not just active) to see what's there
+            $allSubscriptions = $stripe->subscriptions->all([
+                'customer' => $customerId,
+                'limit' => 100
+            ]);
             
-            // Check if database needs update
-            if ($user['plan'] !== 'PREMIUM' || $user['stripe_customer_id'] !== $customerId || $user['stripe_subscription_id'] !== $subscriptionId) {
-                echo "  🔄 Updating database...\n";
-                
-                // Update user plan
-                $userRepo->updatePlan((int)$user['id'], 'PREMIUM', $planExpiration);
-                
-                // Update Stripe IDs
-                $userRepo->updateStripeCustomerId((int)$user['id'], $customerId);
-                $userRepo->updateSubscriptionMetadata((int)$user['id'], [
-                    'stripe_subscription_id' => $subscriptionId,
-                    'current_period_end' => $planExpiration,
-                ]);
-                
-                echo "  ✅ Database updated!\n";
-                $updated++;
-            } else {
-                echo "  ✓ Database already up to date\n";
+            // Get active/trialing subscriptions
+            $activeSubscriptions = [];
+            foreach ($allSubscriptions->data as $sub) {
+                if (in_array($sub->status, ['active', 'trialing'])) {
+                    $activeSubscriptions[] = $sub;
+                }
             }
-        } else {
-            echo "  ⚠️  No active subscriptions found for this customer\n";
+            
+            if (count($activeSubscriptions) > 0) {
+                $subscription = $activeSubscriptions[0];
+                $subscriptionId = $subscription->id;
+                $planExpiration = gmdate('Y-m-d H:i:s', (int)$subscription->current_period_end);
+                
+                echo "  ✓ Active subscription found: {$subscriptionId} (Status: {$subscription->status})\n";
+                echo "  ✓ Plan expiration: {$planExpiration}\n";
+                
+                // Check if database needs update
+                if ($user['plan'] !== 'PREMIUM' || $user['stripe_customer_id'] !== $customerId || $user['stripe_subscription_id'] !== $subscriptionId) {
+                    echo "  🔄 Updating database...\n";
+                    
+                    // Update user plan
+                    $userRepo->updatePlan((int)$user['id'], 'PREMIUM', $planExpiration);
+                    
+                    // Update Stripe IDs
+                    $userRepo->updateStripeCustomerId((int)$user['id'], $customerId);
+                    $userRepo->updateSubscriptionMetadata((int)$user['id'], [
+                        'stripe_subscription_id' => $subscriptionId,
+                        'current_period_end' => $planExpiration,
+                    ]);
+                    
+                    echo "  ✅ Database updated!\n";
+                    $updated++;
+                } else {
+                    echo "  ✓ Database already up to date\n";
+                }
+            } else {
+                // No active subscriptions
+                if (count($allSubscriptions->data) > 0) {
+                    $sub = $allSubscriptions->data[0];
+                    echo "  ⚠️  No active subscriptions. Most recent subscription status: {$sub->status}\n";
+                } else {
+                    echo "  ⚠️  No subscriptions found for this customer\n";
+                }
+                
+                // If DB shows PREMIUM but no active subscription, this is a mismatch
+                if ($user['plan'] === 'PREMIUM') {
+                    echo "  ⚠️  MISMATCH: DB shows PREMIUM but no active Stripe subscription\n";
+                    $mismatches[] = [
+                        'email' => $email,
+                        'customer_id' => $customerId,
+                        'db_plan' => $user['plan'],
+                        'stripe_status' => count($allSubscriptions->data) > 0 ? $allSubscriptions->data[0]->status : 'NONE'
+                    ];
+                }
+            }
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            echo "  ❌ ERROR: Customer not found in Stripe: {$e->getMessage()}\n";
+            $notFound[] = ['email' => $email, 'customer_id' => $customerId, 'error' => $e->getMessage()];
+        } catch (Throwable $e) {
+            echo "  ❌ ERROR: {$e->getMessage()}\n";
+            $notFound[] = ['email' => $email, 'customer_id' => $customerId, 'error' => $e->getMessage()];
         }
         
         echo "\n";
     }
     
     echo "\n=== Summary ===\n";
+    echo "Users checked: " . count($users) . "\n";
     echo "Users updated: {$updated}\n";
-    echo "Customers not found in database: " . count($notFound) . "\n";
+    echo "Mismatches found: " . count($mismatches) . "\n";
+    echo "Customers not found in Stripe: " . count($notFound) . "\n";
+    
+    if (count($mismatches) > 0) {
+        echo "\n⚠️  MISMATCHES (DB shows PREMIUM but no active Stripe subscription):\n";
+        foreach ($mismatches as $m) {
+            echo "  - {$m['email']} (Customer: {$m['customer_id']}, DB Plan: {$m['db_plan']}, Stripe Status: {$m['stripe_status']})\n";
+        }
+    }
     
     if (count($notFound) > 0) {
-        echo "\nCustomers not in database:\n";
+        echo "\n❌ Customers not found in Stripe:\n";
         foreach ($notFound as $nf) {
-            echo "  - {$nf['email']} (Customer ID: {$nf['customer_id']})\n";
+            echo "  - {$nf['email']} (Customer ID: {$nf['customer_id']}, Error: {$nf['error']})\n";
         }
     }
     
