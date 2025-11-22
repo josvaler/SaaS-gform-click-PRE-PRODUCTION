@@ -7,6 +7,7 @@ use App\Services\UrlValidationService;
 use App\Services\ShortCodeService;
 use App\Services\QuotaService;
 use App\Services\QrCodeService;
+use App\Services\EmailService;
 
 require __DIR__ . '/../config/bootstrap.php';
 require_auth();
@@ -125,6 +126,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             
                             // Record quota usage
                             $quotaService->recordLinkCreation((int)$user['id']);
+                            
+                            // Send confirmation email to user
+                            try {
+                                $userEmail = $user['email'] ?? null;
+                                if (!empty($userEmail)) {
+                                    $emailService = new EmailService();
+                                    $userName = $user['name'] ?? $user['email'] ?? '';
+                                    $emailSubject = 'Your Short Link Has Been Created - GForms';
+                                    $emailBody = generate_link_creation_email_template($link, $appConfig['base_url'], $userName);
+                                    
+                                    $emailSent = $emailService->send($userEmail, $emailSubject, $emailBody);
+                                    if (!$emailSent) {
+                                        // Log error but don't fail the link creation
+                                        error_log('Failed to send link creation email to: ' . $userEmail);
+                                    }
+                                }
+                            } catch (\Throwable $emailError) {
+                                // Log email error but don't fail the link creation
+                                error_log('Error sending link creation email: ' . $emailError->getMessage());
+                            }
                             
                             redirect('/link/' . $shortCode);
                         } catch (\Throwable $e) {

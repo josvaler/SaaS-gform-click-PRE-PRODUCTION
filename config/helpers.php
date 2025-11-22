@@ -259,3 +259,159 @@ function get_early_bird_count(): array
     }
 }
 
+/**
+ * Generate email template for link creation confirmation
+ * 
+ * @param array $link Link data from database
+ * @param string $baseUrl Base URL of the application
+ * @param string $userName User's name or email
+ * @return string HTML email template
+ */
+function generate_link_creation_email_template(array $link, string $baseUrl, string $userName = ''): string
+{
+    $shortUrl = rtrim($baseUrl, '/') . '/' . html($link['short_code'] ?? '');
+    $originalUrl = html($link['original_url'] ?? '');
+    $label = html($link['label'] ?? '');
+    $shortCode = html($link['short_code'] ?? '');
+    $createdAt = !empty($link['created_at']) ? date('F d, Y \a\t H:i', strtotime($link['created_at'])) : 'N/A';
+    $expiresAt = !empty($link['expires_at']) ? date('F d, Y \a\t H:i', strtotime($link['expires_at'])) : null;
+    $linkDetailsUrl = rtrim($baseUrl, '/') . '/link/' . html($link['short_code'] ?? '');
+    $qrCodePath = $link['qr_code_path'] ?? null;
+    $qrCodeUrl = null;
+    
+    // Generate QR code URL if path exists
+    if ($qrCodePath) {
+        // QR code path is stored as /qr/filename.png, so we need to check in public/qr/
+        $qrFilePath = __DIR__ . '/../public' . $qrCodePath;
+        if (file_exists($qrFilePath)) {
+            $qrCodeUrl = rtrim($baseUrl, '/') . $qrCodePath;
+        }
+    }
+    
+    $greeting = !empty($userName) ? html($userName) : 'Hello';
+    
+    // Build label row if label exists
+    $labelRow = '';
+    if (!empty($label)) {
+        $labelRow = '<tr>
+            <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Label:</td>
+            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">' . $label . '</td>
+        </tr>';
+    }
+    
+    // Build expiration row if expiration exists
+    $expirationRow = '';
+    if ($expiresAt) {
+        $expirationRow = '<tr>
+            <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Expires:</td>
+            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">' . $expiresAt . '</td>
+        </tr>';
+    }
+    
+    // Build QR code section if QR code exists
+    $qrCodeSection = '';
+    if ($qrCodeUrl) {
+        $qrCodeSection = '<div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; margin-bottom: 30px; text-align: center;">
+            <h2 style="margin: 0 0 16px; color: #1e293b; font-size: 18px; font-weight: 600;">QR Code</h2>
+            <img src="' . $qrCodeUrl . '" alt="QR Code" style="max-width: 200px; height: auto; border: 1px solid #e2e8f0; border-radius: 4px; background-color: #ffffff; padding: 8px;">
+            <p style="margin: 12px 0 0; color: #64748b; font-size: 12px;">Scan this QR code to access your link</p>
+        </div>';
+    }
+    
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Short Link Has Been Created</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">Link Created Successfully</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; color: #334155; font-size: 16px; line-height: 1.6;">
+                                {$greeting},
+                            </p>
+                            <p style="margin: 0 0 30px; color: #334155; font-size: 16px; line-height: 1.6;">
+                                Your short link has been created successfully! Here are all the details:
+                            </p>
+                            
+                            <!-- Link Details Box -->
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; margin-bottom: 30px;">
+                                <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 18px; font-weight: 600;">Link Information</h2>
+                                
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600; width: 140px;">Short URL:</td>
+                                        <td style="padding: 8px 0;">
+                                            <a href="{$shortUrl}" style="color: #10b981; text-decoration: none; font-size: 14px; word-break: break-all; font-weight: 500;">{$shortUrl}</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Original URL:</td>
+                                        <td style="padding: 8px 0;">
+                                            <a href="{$originalUrl}" style="color: #3b82f6; text-decoration: none; font-size: 14px; word-break: break-all;">{$originalUrl}</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Short Code:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 4px 8px; border-radius: 4px; display: inline-block;">{$shortCode}</td>
+                                    </tr>
+                                    {$labelRow}
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Created:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">{$createdAt}</td>
+                                    </tr>
+                                    {$expirationRow}
+                                </table>
+                            </div>
+                            
+                            {$qrCodeSection}
+                            
+                            <!-- Action Button -->
+                            <table role="presentation" style="width: 100%; margin: 30px 0;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="{$linkDetailsUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">View Link Details</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+                                You can manage this link and view analytics from your dashboard.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="margin: 0 0 10px; color: #64748b; font-size: 14px;">
+                                Thank you for using GForms!
+                            </p>
+                            <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                                If you have any questions, please contact us at <a href="mailto:support@gforms.click" style="color: #10b981; text-decoration: none;">support@gforms.click</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
+}
+
