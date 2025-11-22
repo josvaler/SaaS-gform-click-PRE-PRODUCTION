@@ -450,6 +450,20 @@ require __DIR__ . '/../views/partials/header.php';
                                 </div>
                             </div>
 
+                            <!-- Stripe Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-stripe" id="accordion-header-stripe">
+                                    <i class="fab fa-stripe" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.stripe') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-stripe" aria-labelledby="accordion-header-stripe" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <?php require __DIR__ . '/../views/admin/diagnostics/stripe-health.php'; ?>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Environment Accordion -->
                             <div class="accordion-item">
                                 <button class="accordion-header" aria-expanded="false" aria-controls="accordion-environment" id="accordion-header-environment">
@@ -491,9 +505,7 @@ require __DIR__ . '/../views/partials/header.php';
                                 </button>
                                 <div class="accordion-content" id="accordion-misc" aria-labelledby="accordion-header-misc" aria-hidden="true">
                                     <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Miscellaneous diagnostics content will be displayed here.</p>
-                                        </div>
+                                        <?php require __DIR__ . '/../views/admin/diagnostics/reports.php'; ?>
                                     </div>
                                 </div>
                             </div>

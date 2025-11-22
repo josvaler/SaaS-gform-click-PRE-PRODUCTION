@@ -17,16 +17,7 @@ function execCommand(string $command): ?string
     }
 }
 
-// Helper function to format number
-if (!function_exists('formatNumber')) {
-    function formatNumber($value, int $decimals = 0): string
-    {
-        if ($value === null || $value === '') {
-            return 'N/A';
-        }
-        return number_format((float)$value, $decimals);
-    }
-}
+// formatNumber is now in config/helpers.php
 
 // Helper function to get percentage color
 function getPercentageColor(float $percentage): string

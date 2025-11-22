@@ -2,6 +2,12 @@
 RewriteEngine On
 RewriteBase /
 
+# --- Admin route (MUST come first, before any other rules) ---
+# Handle both /admin and /admin/ - rewrite to admin.php even if admin/ directory exists
+# This prevents Apache from treating /admin/ as a directory request
+RewriteCond %{REQUEST_URI} ^/admin/?$ [NC]
+RewriteRule ^admin/?$ admin.php [L,QSA]
+
 # --- Regenerate QR route (must come before general .php rule) ---
 RewriteRule ^regenerate-qr$ regenerate-qr.php [L,QSA]
 

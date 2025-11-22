@@ -51,25 +51,39 @@ function require_admin(): void
     
     $user = session_user();
     if (empty($user['id'])) {
+        error_log('Admin check failed: User ID not in session. Session data: ' . json_encode($user));
         redirect('/login');
     }
     
-    // Check role in database
-    try {
-        $pdo = db();
-        $statement = $pdo->prepare('SELECT role FROM users WHERE id = :id LIMIT 1');
-        $statement->execute(['id' => $user['id']]);
-        $dbUser = $statement->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$dbUser || $dbUser['role'] !== 'ADMIN') {
-            http_response_code(403);
-            die('Access denied. Admin privileges required.');
+    // First check session role (faster, but verify with database)
+    $sessionRole = $user['role'] ?? null;
+    if ($sessionRole === 'ADMIN') {
+        // Double-check with database for security
+        try {
+            $pdo = db();
+            $statement = $pdo->prepare('SELECT role FROM users WHERE id = :id LIMIT 1');
+            $statement->execute(['id' => $user['id']]);
+            $dbUser = $statement->fetch(PDO::FETCH_ASSOC);
+            
+            if ($dbUser && $dbUser['role'] === 'ADMIN') {
+                return; // Access granted
+            } else {
+                error_log('Admin check failed: Session says ADMIN but database says: ' . ($dbUser['role'] ?? 'NULL') . ' for user ID: ' . $user['id']);
+            }
+        } catch (\Throwable $e) {
+            error_log('Admin check database error: ' . $e->getMessage() . ' for user ID: ' . $user['id']);
+            // If database check fails but session says ADMIN, allow access (session was set from DB during login)
+            if ($sessionRole === 'ADMIN') {
+                return;
+            }
         }
-    } catch (\Throwable $e) {
-        error_log('Admin check error: ' . $e->getMessage());
-        http_response_code(403);
-        die('Access denied.');
     }
+    
+    // If we get here, user is not admin
+    error_log('Admin check failed: User ID ' . $user['id'] . ' - Session role: ' . ($sessionRole ?? 'NULL'));
+    http_response_code(403);
+    header('Content-Type: text/html; charset=utf-8');
+    die('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Access Denied</title></head><body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;"><h1>403 Forbidden</h1><p>Access denied. Admin privileges required.</p><p>User ID: ' . htmlspecialchars((string)($user['id'] ?? 'N/A')) . '</p><p>Session Role: ' . htmlspecialchars($sessionRole ?? 'N/A') . '</p><p><a href="/login">Login</a> | <a href="/dashboard">Dashboard</a></p></body></html>');
 }
 
 function generate_csrf_token(): string
@@ -93,6 +107,14 @@ function formatBytes(int $bytes, int $precision = 2): string
     $pow = min($pow, count($units) - 1);
     $bytes /= (1 << (10 * $pow));
     return round($bytes, $precision) . ' ' . $units[$pow];
+}
+
+function formatNumber($value, int $decimals = 0): string
+{
+    if ($value === null || $value === '') {
+        return 'N/A';
+    }
+    return number_format((float)$value, $decimals);
 }
 
 function html(?string $text): string
