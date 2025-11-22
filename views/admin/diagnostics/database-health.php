@@ -24,12 +24,14 @@ try {
     }
     
     // Helper function to format number
-    function formatNumber($value, int $decimals = 0): string
-    {
-        if ($value === null || $value === '') {
-            return 'N/A';
+    if (!function_exists('formatNumber')) {
+        function formatNumber($value, int $decimals = 0): string
+        {
+            if ($value === null || $value === '') {
+                return 'N/A';
+            }
+            return number_format((float)$value, $decimals);
         }
-        return number_format((float)$value, $decimals);
     }
     
     // Get current date/time

@@ -362,6 +362,8 @@ return [
     'admin.diagnostics.db_no_tables' => 'No hay tablas disponibles',
     'admin.diagnostics.db_table_size_error' => 'Error al obtener tamaños de tablas:',
     'admin.diagnostics.db_hit_rate' => 'Hit Rate (%)',
+    'admin.diagnostics.os_health_check' => 'Ubuntu Server Health Check',
+    'admin.diagnostics.os_service_not_installed' => 'No instalado',
     'admin.environment.env' => '.env',
     'admin.environment.htaccess' => '.htaccess',
     'admin.environment.stripe' => 'Stripe',

@@ -431,9 +431,7 @@ require __DIR__ . '/../views/partials/header.php';
                                 </button>
                                 <div class="accordion-content" id="accordion-os" aria-labelledby="accordion-header-os" aria-hidden="true">
                                     <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Operating System diagnostics content will be displayed here.</p>
-                                        </div>
+                                        <?php require __DIR__ . '/../views/admin/diagnostics/os-health.php'; ?>
                                     </div>
                                 </div>
                             </div>
