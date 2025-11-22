@@ -568,6 +568,45 @@ function getStripeSanityHeaders(): array
     return ['Section', 'Check', 'Status', 'Details', 'Recommendation'];
 }
 
+/**
+ * Format large numbers as Excel text to prevent scientific notation
+ * Uses Excel formula: ="value" to force text format
+ */
+function formatExcelText($value): string
+{
+    if ($value === null || $value === '' || $value === 'NOT FOUND') {
+        return (string)$value;
+    }
+    
+    // Convert to string and check if it's a numeric value
+    $strValue = (string)$value;
+    
+    // Check if it's a numeric string (could be a large number)
+    if (is_numeric($strValue) && strlen($strValue) > 10) {
+        // Format as Excel text formula: ="value"
+        return '="' . $strValue . '"';
+    }
+    
+    return $strValue;
+}
+
+/**
+ * Check if a field key should be formatted as Excel text
+ */
+function shouldFormatAsText(string $key): bool
+{
+    $textFields = [
+        'user_id',
+        'google_id',
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'customer_id',
+        'search_value' // Only if it's numeric
+    ];
+    
+    return in_array($key, $textFields, true);
+}
+
 function saveCSV(string $filepath, array $headers, array $data): void
 {
     $fp = fopen($filepath, 'w');
@@ -593,11 +632,26 @@ function saveCSV(string $filepath, array $headers, array $data): void
         $csvRow = [];
         if (!empty($keyMapping)) {
             foreach ($keyMapping as $index => $key) {
-                $csvRow[] = $row[$key] ?? '';
+                $value = $row[$key] ?? '';
+                
+                // Format large numbers as Excel text
+                if (shouldFormatAsText($key)) {
+                    $value = formatExcelText($value);
+                }
+                
+                $csvRow[] = $value;
             }
         } else {
-            // Fallback: use values in order
-            $csvRow = array_values($row);
+            // Fallback: use values in order (format any large numeric values)
+            $csvRow = [];
+            foreach (array_values($row) as $val) {
+                // Check if value looks like a large number
+                if (is_numeric($val) && strlen((string)$val) > 10) {
+                    $csvRow[] = formatExcelText($val);
+                } else {
+                    $csvRow[] = $val;
+                }
+            }
         }
         fputcsv($fp, $csvRow);
     }

@@ -183,9 +183,15 @@ declare(strict_types=1);
 
     <!-- Recent Reports -->
     <div style="margin-top: 2rem;">
-        <h4 style="color: var(--text-primary); font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">
-            <?= t('admin.reports.recent_reports') ?>
-        </h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="color: var(--text-primary); font-size: 1rem; font-weight: 600; margin: 0;">
+                <?= t('admin.reports.recent_reports') ?>
+            </h4>
+            <button id="delete-all-btn" onclick="deleteAllReports()" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-trash-alt"></i>
+                <?= t('admin.reports.delete_all') ?>
+            </button>
+        </div>
         <div id="recent-reports-list" style="display: grid; gap: 0.75rem;">
             <!-- Reports will be loaded here -->
         </div>
@@ -232,27 +238,150 @@ declare(strict_types=1);
     const rowsPerPage = 50;
     let currentFilename = '';
 
-    // Report type cards click handler
-    document.querySelectorAll('.report-type-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const reportType = this.dataset.type;
-            showReportForm(reportType);
+    // Make functions globally accessible for onclick handlers
+    window.deleteReport = function(filename, reportType) {
+        if (!confirm('<?= t('admin.reports.delete_confirm') ?>')) {
+            return;
+        }
+        
+        fetch('/admin/reports/delete.php?file=' + encodeURIComponent(filename))
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert('<?= t('admin.reports.delete_success') ?>');
+                    // Reload reports list
+                    loadRecentReports();
+                } else {
+                    alert('<?= t('admin.reports.delete_error') ?>: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting report:', error);
+                alert('<?= t('admin.reports.delete_error') ?>');
+            });
+    };
+
+    window.deleteAllReports = function() {
+        if (!confirm('<?= t('admin.reports.delete_all_confirm') ?>')) {
+            return;
+        }
+        
+        const deleteBtn = document.getElementById('delete-all-btn');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <?= t('admin.reports.deleting') ?>';
+        
+        fetch('/admin/reports/delete_all.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('<?= t('admin.reports.delete_all_success') ?> (' + data.deleted_count + ' reports)');
+                    // Reload reports list
+                    loadRecentReports();
+                } else {
+                    alert('<?= t('admin.reports.delete_error') ?>: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting all reports:', error);
+                alert('<?= t('admin.reports.delete_error') ?>');
+            })
+            .finally(() => {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = originalText;
+            });
+    };
+
+    // Initialize all event handlers
+    function initEventHandlers() {
+        // Report type cards click handler
+        document.querySelectorAll('.report-type-card').forEach(card => {
+            // Only add listener if not already attached
+            if (!card.dataset.listenerAttached) {
+                card.addEventListener('click', function() {
+                    const reportType = this.dataset.type;
+                    showReportForm(reportType);
+                });
+                card.dataset.listenerAttached = 'true';
+            }
         });
-    });
 
-    // Cancel button
-    document.getElementById('cancel-btn').addEventListener('click', function() {
-        hideReportForm();
-    });
+        // Cancel button
+        const cancelBtn = document.getElementById('cancel-btn');
+        if (cancelBtn && !cancelBtn.dataset.listenerAttached) {
+            cancelBtn.addEventListener('click', function() {
+                hideReportForm();
+            });
+            cancelBtn.dataset.listenerAttached = 'true';
+        }
 
-    // Form submit
-    document.getElementById('report-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        generateReport();
-    });
+        // Form submit
+        const reportForm = document.getElementById('report-form');
+        if (reportForm && !reportForm.dataset.listenerAttached) {
+            reportForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                generateReport();
+            });
+            reportForm.dataset.listenerAttached = 'true';
+        }
 
-    // Load recent reports on page load
-    loadRecentReports();
+        // Load recent reports
+        loadRecentReports();
+    }
+
+    // Track if handlers are initialized to avoid duplicate listeners
+    let handlersInitialized = false;
+    
+    function initializeReports() {
+        if (handlersInitialized) return;
+        
+        // Check if elements exist
+        const hasCards = document.querySelectorAll('.report-type-card').length > 0;
+        const hasForm = document.getElementById('report-form');
+        
+        if (hasCards || hasForm) {
+            initEventHandlers();
+            handlersInitialized = true;
+        }
+    }
+    
+    // Initialize when DOM is ready
+    function initOnReady() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initializeReports, 200);
+            });
+        } else {
+            setTimeout(initializeReports, 200);
+        }
+    }
+    
+    // Also initialize when accordion opens (in case script runs before accordion is visible)
+    function setupAccordionObserver() {
+        const miscAccordion = document.getElementById('accordion-misc');
+        if (miscAccordion) {
+            const observer = new MutationObserver(function(mutations) {
+                if (miscAccordion.getAttribute('aria-hidden') === 'false') {
+                    // Accordion opened, ensure handlers are initialized
+                    setTimeout(initializeReports, 100);
+                }
+            });
+            observer.observe(miscAccordion, { attributes: true, attributeFilter: ['aria-hidden'] });
+            
+            // Also check immediately if accordion is already open
+            if (miscAccordion.getAttribute('aria-hidden') === 'false') {
+                setTimeout(initializeReports, 100);
+            }
+        }
+    }
+    
+    // Start initialization
+    initOnReady();
+    setupAccordionObserver();
+    
+    // Also try to initialize immediately (in case everything is already loaded)
+    setTimeout(initializeReports, 300);
 
     function showReportForm(reportType) {
         const formContainer = document.getElementById('report-form-container');
@@ -368,6 +497,12 @@ declare(strict_types=1);
             });
     }
 
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     function displayRecentReports(reports) {
         const container = document.getElementById('recent-reports-list');
         
@@ -411,10 +546,15 @@ declare(strict_types=1);
                             </div>
                         </div>
                     </div>
-                    <a href="/admin/reports/download.php?file=${encodeURIComponent(report.filename)}" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.875rem;">
-                        <i class="fas fa-download" style="margin-right: 0.5rem;"></i>
-                        <?= t('admin.reports.download_previous') ?>
-                    </a>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <a href="/admin/reports/download.php?file=${encodeURIComponent(report.filename)}" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.875rem;">
+                            <i class="fas fa-download" style="margin-right: 0.5rem;"></i>
+                            <?= t('admin.reports.download_previous') ?>
+                        </a>
+                        <button onclick="deleteReport('${escapeHtml(report.filename)}', '${escapeHtml(report.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))}')" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; cursor: pointer;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </div>
             `;
         }).join('');
