@@ -530,9 +530,7 @@ require __DIR__ . '/../views/partials/header.php';
                                 </button>
                                 <div class="accordion-content" id="env-accordion-env" aria-labelledby="env-accordion-header-env" aria-hidden="true">
                                     <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">.env configuration content will be displayed here.</p>
-                                        </div>
+                                        <?php require __DIR__ . '/../views/admin/environment/env-editor.php'; ?>
                                     </div>
                                 </div>
                             </div>
@@ -546,9 +544,7 @@ require __DIR__ . '/../views/partials/header.php';
                                 </button>
                                 <div class="accordion-content" id="env-accordion-htaccess" aria-labelledby="env-accordion-header-htaccess" aria-hidden="true">
                                     <div class="accordion-body">
-                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">.htaccess configuration content will be displayed here.</p>
-                                        </div>
+                                        <?php require __DIR__ . '/../views/admin/environment/htaccess-editor.php'; ?>
                                     </div>
                                 </div>
                             </div>
