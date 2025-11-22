@@ -406,23 +406,175 @@ require __DIR__ . '/../views/partials/header.php';
 
                 <!-- Tab 2: Diagnostics -->
                 <div id="tab-diagnostics" class="tab-content" role="tabpanel" aria-labelledby="tab-button-diagnostics" style="display: none;">
-                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
-                        <i class="fas fa-tools" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                        <p style="font-size: 1.125rem; margin: 0;"><?= t('admin.tab.diagnostics') ?></p>
-                        <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0; opacity: 0.7;">
-                            Diagnostics content coming soon
-                        </p>
+                    <div style="padding: 2rem;">
+                        <div class="accordion-container">
+                            <!-- Connectivity Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-connectivity" id="accordion-header-connectivity">
+                                    <i class="fas fa-network-wired" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.connectivity') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-connectivity" aria-labelledby="accordion-header-connectivity" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Connectivity diagnostics content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OS Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-os" id="accordion-header-os">
+                                    <i class="fas fa-server" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.os') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-os" aria-labelledby="accordion-header-os" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Operating System diagnostics content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Database Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-database" id="accordion-header-database">
+                                    <i class="fas fa-database" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.database') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-database" aria-labelledby="accordion-header-database" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Database diagnostics content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Environment Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-environment" id="accordion-header-environment">
+                                    <i class="fas fa-cog" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.environment') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-environment" aria-labelledby="accordion-header-environment" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Environment diagnostics content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stripe Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-stripe" id="accordion-header-stripe">
+                                    <i class="fab fa-stripe" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.stripe') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-stripe" aria-labelledby="accordion-header-stripe" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Stripe diagnostics content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Misc Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-misc" id="accordion-header-misc">
+                                    <i class="fas fa-info-circle" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.diagnostics.misc') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="accordion-misc" aria-labelledby="accordion-header-misc" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Miscellaneous diagnostics content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tab 3: Environment -->
                 <div id="tab-environment" class="tab-content" role="tabpanel" aria-labelledby="tab-button-environment" style="display: none;">
-                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
-                        <i class="fas fa-server" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                        <p style="font-size: 1.125rem; margin: 0;"><?= t('admin.tab.environment') ?></p>
-                        <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0; opacity: 0.7;">
-                            Environment content coming soon
-                        </p>
+                    <div style="padding: 2rem;">
+                        <div class="accordion-container">
+                            <!-- .env Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="env-accordion-env" id="env-accordion-header-env">
+                                    <i class="fas fa-file-code" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.environment.env') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="env-accordion-env" aria-labelledby="env-accordion-header-env" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">.env configuration content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- .htaccess Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="env-accordion-htaccess" id="env-accordion-header-htaccess">
+                                    <i class="fas fa-file-alt" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.environment.htaccess') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="env-accordion-htaccess" aria-labelledby="env-accordion-header-htaccess" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">.htaccess configuration content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stripe Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="env-accordion-stripe" id="env-accordion-header-stripe">
+                                    <i class="fab fa-stripe" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.environment.stripe') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="env-accordion-stripe" aria-labelledby="env-accordion-header-stripe" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Stripe environment configuration content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Misc Accordion -->
+                            <div class="accordion-item">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="env-accordion-misc" id="env-accordion-header-misc">
+                                    <i class="fas fa-info-circle" style="margin-right: 0.75rem;"></i>
+                                    <span><?= t('admin.environment.misc') ?></span>
+                                    <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
+                                </button>
+                                <div class="accordion-content" id="env-accordion-misc" aria-labelledby="env-accordion-header-misc" aria-hidden="true">
+                                    <div class="accordion-body">
+                                        <div style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+                                            <p style="margin: 0 0 0.5rem 0; opacity: 0.8;">Miscellaneous environment content will be displayed here.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -514,6 +666,54 @@ window.switchTab = function(tabName) {
         document.addEventListener('DOMContentLoaded', initTabs);
     } else {
         initTabs();
+    }
+})();
+
+// Accordion functionality
+(function() {
+    function initAccordions() {
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        
+        // Ensure all accordions start collapsed
+        accordionHeaders.forEach(header => {
+            const accordionId = header.getAttribute('aria-controls');
+            const accordionContent = document.getElementById(accordionId);
+            
+            if (accordionContent) {
+                // Ensure collapsed state on init
+                header.setAttribute('aria-expanded', 'false');
+                accordionContent.setAttribute('aria-hidden', 'true');
+            }
+        });
+        
+        // Add click handlers
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                const accordionId = this.getAttribute('aria-controls');
+                const accordionContent = document.getElementById(accordionId);
+                
+                if (!accordionContent) return;
+                
+                // Toggle current accordion
+                if (isExpanded) {
+                    this.setAttribute('aria-expanded', 'false');
+                    accordionContent.setAttribute('aria-hidden', 'true');
+                } else {
+                    this.setAttribute('aria-expanded', 'true');
+                    accordionContent.setAttribute('aria-hidden', 'false');
+                }
+            });
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAccordions);
+    } else {
+        initAccordions();
     }
 })();
 </script>

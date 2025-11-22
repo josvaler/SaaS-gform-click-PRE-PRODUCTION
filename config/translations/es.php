@@ -316,6 +316,16 @@ return [
     'admin.tab.search' => 'Buscar',
     'admin.tab.diagnostics' => 'Diagnósticos',
     'admin.tab.environment' => 'Entorno',
+    'admin.diagnostics.connectivity' => 'Conectividad',
+    'admin.diagnostics.os' => 'Sistema Operativo',
+    'admin.diagnostics.database' => 'Base de Datos',
+    'admin.diagnostics.environment' => 'Entorno',
+    'admin.diagnostics.stripe' => 'Stripe',
+    'admin.diagnostics.misc' => 'Varios',
+    'admin.environment.env' => '.env',
+    'admin.environment.htaccess' => '.htaccess',
+    'admin.environment.stripe' => 'Stripe',
+    'admin.environment.misc' => 'Varios',
     
     // Redirect
     'redirect.not_found_title' => 'Enlace no encontrado',

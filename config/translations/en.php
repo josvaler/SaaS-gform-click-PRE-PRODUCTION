@@ -316,6 +316,16 @@ return [
     'admin.tab.search' => 'Search',
     'admin.tab.diagnostics' => 'Diagnostics',
     'admin.tab.environment' => 'Environment',
+    'admin.diagnostics.connectivity' => 'Connectivity',
+    'admin.diagnostics.os' => 'OS',
+    'admin.diagnostics.database' => 'Database',
+    'admin.diagnostics.environment' => 'Environment',
+    'admin.diagnostics.stripe' => 'Stripe',
+    'admin.diagnostics.misc' => 'Misc',
+    'admin.environment.env' => '.env',
+    'admin.environment.htaccess' => '.htaccess',
+    'admin.environment.stripe' => 'Stripe',
+    'admin.environment.misc' => 'Misc',
     
     // Redirect
     'redirect.not_found_title' => 'Link not found',
