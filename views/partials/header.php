@@ -111,8 +111,22 @@ $showAds = $currentUser && $userPlan === 'FREE';
                             </div>
                             <div class="user-dropdown-menu">
                                 <?php foreach ($navLinksRight as $link): ?>
+                                    <?php
+                                    // Determine icon based on href or label
+                                    $icon = '';
+                                    $href = $link['href'] ?? '';
+                                    $label = $link['label'] ?? '';
+                                    
+                                    if (strpos($href, '/logout') !== false || strpos(strtolower($label), 'logout') !== false) {
+                                        $icon = '<i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>';
+                                    } elseif (strpos($href, '/billing') !== false || strpos(strtolower($label), 'plan') !== false || strpos(strtolower($label), 'mi plan') !== false || strpos(strtolower($label), 'my plan') !== false) {
+                                        $icon = '<i class="fas fa-credit-card" style="margin-right: 0.5rem;"></i>';
+                                    } elseif (strpos($href, '/profile') !== false || strpos(strtolower($label), 'profile') !== false || strpos(strtolower($label), 'perfil') !== false) {
+                                        $icon = '<i class="fas fa-user" style="margin-right: 0.5rem;"></i>';
+                                    }
+                                    ?>
                                     <a href="<?= html($link['href']) ?>" class="user-dropdown-item <?= $isActive($link['href']) ? 'active' : '' ?>">
-                                        <?= html($link['label']) ?>
+                                        <?= $icon ?><?= html($link['label']) ?>
                                     </a>
                                 <?php endforeach; ?>
                                 <?php if ($isAdmin): ?>
@@ -120,7 +134,9 @@ $showAds = $currentUser && $userPlan === 'FREE';
                                         <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i><?= t('nav.admin') ?>
                                     </a>
                                 <?php endif; ?>
-                                <a href="/profile" class="user-dropdown-item"><?= t('nav.profile') ?></a>
+                                <a href="/profile" class="user-dropdown-item">
+                                    <i class="fas fa-user" style="margin-right: 0.5rem;"></i><?= t('nav.profile') ?>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -141,8 +157,22 @@ $showAds = $currentUser && $userPlan === 'FREE';
                     
                     <?php if ($currentUser): ?>
                         <?php foreach ($navLinksRight as $link): ?>
+                            <?php
+                            // Determine icon based on href or label
+                            $icon = '';
+                            $href = $link['href'] ?? '';
+                            $label = $link['label'] ?? '';
+                            
+                            if (strpos($href, '/logout') !== false || strpos(strtolower($label), 'logout') !== false) {
+                                $icon = '<i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>';
+                            } elseif (strpos($href, '/billing') !== false || strpos(strtolower($label), 'plan') !== false || strpos(strtolower($label), 'mi plan') !== false || strpos(strtolower($label), 'my plan') !== false) {
+                                $icon = '<i class="fas fa-credit-card" style="margin-right: 0.5rem;"></i>';
+                            } elseif (strpos($href, '/profile') !== false || strpos(strtolower($label), 'profile') !== false || strpos(strtolower($label), 'perfil') !== false) {
+                                $icon = '<i class="fas fa-user" style="margin-right: 0.5rem;"></i>';
+                            }
+                            ?>
                             <a href="<?= html($link['href']) ?>" class="mobile-nav-link <?= $isActive($link['href']) ? 'active' : '' ?>">
-                                <?= html($link['label']) ?>
+                                <?= $icon ?><?= html($link['label']) ?>
                             </a>
                         <?php endforeach; ?>
                         <?php if ($isAdmin): ?>
@@ -150,7 +180,9 @@ $showAds = $currentUser && $userPlan === 'FREE';
                                 <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i><?= t('nav.admin') ?>
                             </a>
                         <?php endif; ?>
-                        <a href="/profile" class="mobile-nav-link"><?= t('nav.profile') ?></a>
+                        <a href="/profile" class="mobile-nav-link">
+                            <i class="fas fa-user" style="margin-right: 0.5rem;"></i><?= t('nav.profile') ?>
+                        </a>
                         <div class="mobile-user-info">
                             <div class="mobile-user-name"><?= html($userName) ?></div>
                             <div class="mobile-user-email"><?= html($userEmail) ?></div>
