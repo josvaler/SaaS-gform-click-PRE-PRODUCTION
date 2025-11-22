@@ -227,6 +227,7 @@ ini_set('display_errors', '1');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini-TOP - System Monitor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -468,6 +469,16 @@ ini_set('display_errors', '1');
             margin: 1rem 0;
         }
         
+        .cpu-chart-container {
+            margin-top: 1.5rem;
+            height: 250px;
+            position: relative;
+        }
+        
+        .cpu-chart-container canvas {
+            max-height: 250px;
+        }
+        
         @media (max-width: 768px) {
             .dashboard-header {
                 flex-direction: column;
@@ -539,6 +550,9 @@ ini_set('display_errors', '1');
                 <div class="progress-bar">
                     <div class="progress-fill" id="memoryProgress" style="width: 0%"></div>
                 </div>
+                <div class="cpu-chart-container">
+                    <canvas id="cpuUsageChart"></canvas>
+                </div>
             </div>
             
             <!-- Load Average Card -->
@@ -602,6 +616,224 @@ ini_set('display_errors', '1');
         let previousCpuStats = null;
         let refreshInterval = null;
         let currentInterval = 5; // Default 5 seconds
+        
+        // CPU usage chart data (rolling window of 50 points)
+        let cpuUsageHistory = []; // Total CPU
+        let cpuCoreHistory = {}; // Individual cores: {0: [], 1: [], ...}
+        let refreshCount = 0;
+        let cpuUsageChart = null;
+        
+        // Color palette for CPU cores (8 different colors)
+        const cpuCoreColors = [
+            { border: 'rgb(96, 165, 250)', fill: 'rgba(96, 165, 250, 0.1)' },    // CPU0 - Blue
+            { border: 'rgb(16, 185, 129)', fill: 'rgba(16, 185, 129, 0.1)' },    // CPU1 - Green
+            { border: 'rgb(251, 191, 36)', fill: 'rgba(251, 191, 36, 0.1)' },   // CPU2 - Yellow
+            { border: 'rgb(239, 68, 68)', fill: 'rgba(239, 68, 68, 0.1)' },     // CPU3 - Red
+            { border: 'rgb(168, 85, 247)', fill: 'rgba(168, 85, 247, 0.1)' },   // CPU4 - Purple
+            { border: 'rgb(236, 72, 153)', fill: 'rgba(236, 72, 153, 0.1)' },   // CPU5 - Pink
+            { border: 'rgb(34, 197, 94)', fill: 'rgba(34, 197, 94, 0.1)' },     // CPU6 - Emerald
+            { border: 'rgb(249, 115, 22)', fill: 'rgba(249, 115, 22, 0.1)' }     // CPU7 - Orange
+        ];
+        
+        // Initialize CPU usage chart
+        function initCpuUsageChart() {
+            const ctx = document.getElementById('cpuUsageChart');
+            if (!ctx) return;
+            
+            // Initialize datasets for total CPU and 8 cores
+            const datasets = [
+                {
+                    label: 'CPU Total',
+                    data: [],
+                    borderColor: 'rgb(148, 163, 184)',
+                    backgroundColor: 'rgb(148, 163, 184)', // Same as borderColor for legend
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    borderDash: [5, 5] // Dashed line for total
+                }
+            ];
+            
+            // Add datasets for CPU0-CPU7
+            for (let i = 0; i < 8; i++) {
+                const color = cpuCoreColors[i];
+                datasets.push({
+                    label: `CPU${i}`,
+                    data: [],
+                    borderColor: color.border,
+                    backgroundColor: color.border, // Use borderColor for legend box
+                    borderWidth: 1.5,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 3,
+                    pointBackgroundColor: color.border,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1
+                });
+                // Initialize history for this core
+                cpuCoreHistory[i] = [];
+            }
+            
+            cpuUsageChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'start',
+                            labels: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 10
+                                },
+                                usePointStyle: false,
+                                boxWidth: 15,
+                                boxHeight: 15,
+                                padding: 6
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 10
+                                },
+                                maxTicksLimit: 10
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 25, // Will be dynamically adjusted (0-25%, 0-50%, or 0-100%)
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+        
+        // Update CPU usage chart with new data point
+        function updateCpuUsageChart(cpuUsage, cpuCoresData) {
+            if (!cpuUsageChart || cpuUsage === null || isNaN(cpuUsage)) return;
+            
+            refreshCount++;
+            
+            // Add new data point for total CPU
+            cpuUsageHistory.push(cpuUsage);
+            if (cpuUsageHistory.length > 50) {
+                cpuUsageHistory.shift();
+            }
+            
+            // Add new data points for each CPU core
+            const allCpuValues = [cpuUsage]; // Include total CPU for max calculation
+            if (cpuCoresData) {
+                Object.keys(cpuCoresData).forEach(coreId => {
+                    const coreUsage = cpuCoresData[coreId];
+                    if (coreUsage !== null && !isNaN(coreUsage)) {
+                        const coreNum = parseInt(coreId);
+                        if (coreNum >= 0 && coreNum < 8) {
+                            if (!cpuCoreHistory[coreNum]) {
+                                cpuCoreHistory[coreNum] = [];
+                            }
+                            cpuCoreHistory[coreNum].push(coreUsage);
+                            if (cpuCoreHistory[coreNum].length > 50) {
+                                cpuCoreHistory[coreNum].shift();
+                            }
+                            allCpuValues.push(coreUsage);
+                        }
+                    }
+                });
+            }
+            
+            // Update chart labels
+            const coreLengths = Object.values(cpuCoreHistory).map(h => h ? h.length : 0);
+            const maxLength = Math.max(cpuUsageHistory.length, ...(coreLengths.length > 0 ? coreLengths : [0]), 1);
+            cpuUsageChart.data.labels = Array.from({ length: maxLength }, (_, index) => {
+                return (refreshCount - maxLength + index + 1).toString();
+            });
+            
+            // Update total CPU dataset (index 0)
+            const totalCpuData = Array(maxLength).fill(null);
+            cpuUsageHistory.forEach((value, idx) => {
+                const position = maxLength - cpuUsageHistory.length + idx;
+                if (position >= 0) {
+                    totalCpuData[position] = value;
+                }
+            });
+            cpuUsageChart.data.datasets[0].data = totalCpuData;
+            
+            // Update each CPU core dataset (indices 1-8)
+            for (let i = 0; i < 8; i++) {
+                const datasetIndex = i + 1;
+                const coreData = Array(maxLength).fill(null);
+                if (cpuCoreHistory[i] && cpuCoreHistory[i].length > 0) {
+                    cpuCoreHistory[i].forEach((value, idx) => {
+                        const position = maxLength - cpuCoreHistory[i].length + idx;
+                        if (position >= 0) {
+                            coreData[position] = value;
+                        }
+                    });
+                }
+                cpuUsageChart.data.datasets[datasetIndex].data = coreData;
+            }
+            
+            // Dynamic Y-axis scaling: 
+            // - 0-25% if all <= 25%
+            // - 0-50% if all <= 50% (but > 25%)
+            // - 0-100% if any > 50%
+            const maxValue = Math.max(...allCpuValues);
+            let yMax = 100;
+            if (maxValue <= 25) {
+                yMax = 25;
+            } else if (maxValue <= 50) {
+                yMax = 50;
+            } else {
+                yMax = 100;
+            }
+            cpuUsageChart.options.scales.y.max = yMax;
+            
+            cpuUsageChart.update('none'); // 'none' for instant update without animation
+        }
         
         // Load saved interval from localStorage
         const savedInterval = localStorage.getItem('minitop_refresh_interval');
@@ -713,6 +945,7 @@ ini_set('display_errors', '1');
             const cpuCount = data.cpu_count || 1;
             
             // Update CPU
+            const cpuCoresUsage = {}; // Store CPU core usage for chart
             if (cpuStats && cpuStats.total) {
                 const cpuUsage = calculateCpuUsage(cpuStats.total, previousCpuStats?.total);
                 if (cpuUsage !== null && !isNaN(cpuUsage)) {
@@ -725,7 +958,7 @@ ini_set('display_errors', '1');
                     document.getElementById('cpuTotal').textContent = 'Calculating...';
                 }
                 
-                // Update CPU cores
+                // Update CPU cores and collect usage data for chart
                 const coresContainer = document.getElementById('cpuCoresAccordion');
                 if (cpuStats.cores && Object.keys(cpuStats.cores).length > 0) {
                     coresContainer.innerHTML = '';
@@ -733,6 +966,12 @@ ini_set('display_errors', '1');
                         const core = cpuStats.cores[coreId];
                         const prevCore = previousCpuStats?.cores?.[coreId];
                         const coreUsage = calculateCpuUsage(core, prevCore);
+                        
+                        // Store core usage for chart (only for CPU0-CPU7)
+                        const coreNum = parseInt(coreId);
+                        if (coreNum >= 0 && coreNum < 8 && coreUsage !== null && !isNaN(coreUsage)) {
+                            cpuCoresUsage[coreId] = coreUsage;
+                        }
                         
                         if (coreUsage !== null) {
                             const coreHtml = `
@@ -749,6 +988,11 @@ ini_set('display_errors', '1');
                             coresContainer.innerHTML += coreHtml;
                         }
                     });
+                }
+                
+                // Update CPU usage chart with total and core data
+                if (cpuUsage !== null && !isNaN(cpuUsage)) {
+                    updateCpuUsageChart(cpuUsage, cpuCoresUsage);
                 }
             }
             
@@ -811,6 +1055,13 @@ ini_set('display_errors', '1');
             }
             updateMetrics();
             refreshInterval = setInterval(updateMetrics, currentInterval * 1000);
+        }
+        
+        // Initialize chart on page load
+        if (typeof Chart !== 'undefined') {
+            initCpuUsageChart();
+        } else {
+            console.warn('Chart.js not loaded, CPU usage chart will not be available');
         }
         
         // Initial display with server data
