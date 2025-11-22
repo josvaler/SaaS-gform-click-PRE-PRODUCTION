@@ -313,6 +313,9 @@ return [
     'admin.plan' => 'Plan',
     'admin.links' => 'Enlaces',
     'admin.rows_per_page' => 'Filas',
+    'admin.tab.search' => 'Buscar',
+    'admin.tab.diagnostics' => 'Diagnósticos',
+    'admin.tab.environment' => 'Entorno',
     
     // Redirect
     'redirect.not_found_title' => 'Enlace no encontrado',

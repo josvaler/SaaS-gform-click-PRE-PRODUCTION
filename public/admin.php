@@ -159,17 +159,33 @@ require __DIR__ . '/../views/partials/header.php';
             <div class="card-header">
                 <div>
                     <h2 style="margin: 0; font-size: 1.75rem; font-weight: 700;"><?= t('admin.title') ?></h2>
-                    <p class="text-muted" style="margin: 0.5rem 0 0 0;"><?= t('admin.search_users') ?></p>
                 </div>
             </div>
 
-            <?php if ($assignError): ?>
-                <div class="alert alert-error" style="margin: 1.5rem;"><?= html($assignError) ?></div>
-            <?php endif; ?>
+            <!-- Tabs Container -->
+            <div class="tabs-container">
+                <div class="tab-header" role="tablist">
+                    <button class="tab-button active" role="tab" aria-selected="true" aria-controls="tab-search" id="tab-button-search" data-tab="search" onclick="if(typeof window.switchTab==='function'){window.switchTab('search');}return false;">
+                        <?= t('admin.tab.search') ?>
+                    </button>
+                    <button class="tab-button" role="tab" aria-selected="false" aria-controls="tab-diagnostics" id="tab-button-diagnostics" data-tab="diagnostics" onclick="if(typeof window.switchTab==='function'){window.switchTab('diagnostics');}return false;">
+                        <?= t('admin.tab.diagnostics') ?>
+                    </button>
+                    <button class="tab-button" role="tab" aria-selected="false" aria-controls="tab-environment" id="tab-button-environment" data-tab="environment" onclick="if(typeof window.switchTab==='function'){window.switchTab('environment');}return false;">
+                        <?= t('admin.tab.environment') ?>
+                    </button>
+                </div>
 
-            <?php if ($assignSuccess): ?>
-                <div class="alert alert-success" style="margin: 1.5rem;"><?= html($assignSuccess) ?></div>
-            <?php endif; ?>
+                <?php if ($assignError): ?>
+                    <div class="alert alert-error" style="margin: 1.5rem;"><?= html($assignError) ?></div>
+                <?php endif; ?>
+
+                <?php if ($assignSuccess): ?>
+                    <div class="alert alert-success" style="margin: 1.5rem;"><?= html($assignSuccess) ?></div>
+                <?php endif; ?>
+
+                <!-- Tab 1: Search -->
+                <div id="tab-search" class="tab-content active" role="tabpanel" aria-labelledby="tab-button-search" style="display: block;">
 
             <!-- Search Section -->
             <div style="padding: 2rem; border-bottom: 1px solid var(--color-border, #334155);">
@@ -380,14 +396,126 @@ require __DIR__ . '/../views/partials/header.php';
                 <!-- Initial State -->
                 <div style="padding: 4rem 2rem; text-align: center; color: var(--text-secondary);">
                     <i class="fas fa-search" style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.3;"></i>
-                    <p style="font-size: 1.25rem; margin: 0;"><?= t('admin.search_users') ?></p>
+                    <p style="font-size: 1.25rem; margin: 0;"><?= t('common.search') ?></p>
                     <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0; opacity: 0.7;">
                         <?= t('admin.search_by_ip') ?>, <?= t('admin.search_by_google_id') ?>, <?= t('admin.search_by_name') ?>
                     </p>
                 </div>
             <?php endif; ?>
+                </div>
+
+                <!-- Tab 2: Diagnostics -->
+                <div id="tab-diagnostics" class="tab-content" role="tabpanel" aria-labelledby="tab-button-diagnostics" style="display: none;">
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <i class="fas fa-tools" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p style="font-size: 1.125rem; margin: 0;"><?= t('admin.tab.diagnostics') ?></p>
+                        <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0; opacity: 0.7;">
+                            Diagnostics content coming soon
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Environment -->
+                <div id="tab-environment" class="tab-content" role="tabpanel" aria-labelledby="tab-button-environment" style="display: none;">
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <i class="fas fa-server" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p style="font-size: 1.125rem; margin: 0;"><?= t('admin.tab.environment') ?></p>
+                        <p style="font-size: 0.875rem; margin: 0.5rem 0 0 0; opacity: 0.7;">
+                            Environment content coming soon
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+
+<script>
+// Tab switching functionality - define immediately and make globally accessible
+window.switchTab = function(tabName) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+        content.setAttribute('aria-hidden', 'true');
+        content.style.display = 'none';
+    });
+    
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+        button.setAttribute('aria-selected', 'false');
+    });
+    
+    // Show selected tab content
+    const selectedTab = document.getElementById('tab-' + tabName);
+    const selectedButton = document.getElementById('tab-button-' + tabName);
+    
+    if (selectedTab && selectedButton) {
+        selectedTab.classList.add('active');
+        selectedTab.setAttribute('aria-hidden', 'false');
+        selectedTab.style.display = 'block';
+        selectedButton.classList.add('active');
+        selectedButton.setAttribute('aria-selected', 'true');
+    }
+};
+
+// Initialize tabs on page load
+(function() {
+    function initTabs() {
+        // Add click handlers to tab buttons
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            const tabName = button.getAttribute('data-tab');
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const tabName = this.getAttribute('data-tab');
+                if (tabName && typeof window.switchTab === 'function') {
+                    window.switchTab(tabName);
+                }
+            });
+        });
+        
+        // Ensure search tab is visible by default
+        const searchTab = document.getElementById('tab-search');
+        const diagnosticsTab = document.getElementById('tab-diagnostics');
+        const environmentTab = document.getElementById('tab-environment');
+        
+        if (searchTab) {
+            searchTab.classList.add('active');
+            searchTab.style.display = 'block';
+            searchTab.setAttribute('aria-hidden', 'false');
+        }
+        
+        if (diagnosticsTab) {
+            diagnosticsTab.classList.remove('active');
+            diagnosticsTab.style.display = 'none';
+            diagnosticsTab.setAttribute('aria-hidden', 'true');
+        }
+        
+        if (environmentTab) {
+            environmentTab.classList.remove('active');
+            environmentTab.style.display = 'none';
+            environmentTab.setAttribute('aria-hidden', 'true');
+        }
+        
+        // Check for hash in URL to open specific tab
+        const hash = window.location.hash;
+        if (hash === '#diagnostics' && typeof window.switchTab === 'function') {
+            window.switchTab('diagnostics');
+        } else if (hash === '#environment' && typeof window.switchTab === 'function') {
+            window.switchTab('environment');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTabs);
+    } else {
+        initTabs();
+    }
+})();
+</script>
 
 <?php require __DIR__ . '/../views/partials/footer.php'; ?>
