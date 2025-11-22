@@ -1,0 +1,50 @@
+{
+    "timestamp": 1763788324,
+    "ttl": 30,
+    "data": {
+        "current_date": "2025-11-21 23:12:04",
+        "connections": {
+            "threads_connected": "1",
+            "threads_running": "1",
+            "max_used_connections": "5",
+            "aborted_connects": "241"
+        },
+        "qps": {
+            "qps": 0.16895863811677084,
+            "uptime": "37595",
+            "queries": "6352"
+        },
+        "slow_queries": {
+            "slow_queries": "0"
+        },
+        "handler_latencies": {
+            "handler_read_first": "3",
+            "handler_read_key": "1185",
+            "handler_read_next": "1054",
+            "handler_read_prev": "19",
+            "handler_read_rnd": "752",
+            "handler_read_rnd_next": "6913",
+            "handler_write": "68"
+        },
+        "buffer_pool": {
+            "innodb_buffer_pool_reads": "247",
+            "innodb_buffer_pool_read_requests": "17841",
+            "hit_rate": 98.61554845580405
+        },
+        "iops": {
+            "innodb_data_reads": "265",
+            "innodb_data_writes": "0",
+            "innodb_os_log_fsyncs": null
+        },
+        "redo_log": {
+            "innodb_log_waits": "0",
+            "innodb_log_written": null
+        },
+        "locks": {
+            "innodb_row_lock_time": "0",
+            "innodb_row_lock_waits": "0",
+            "innodb_deadlocks": "0"
+        },
+        "replication": null
+    }
+}

@@ -1,0 +1,56 @@
+{
+    "timestamp": 1763788286,
+    "ttl": 30,
+    "data": {
+        "servers": [
+            {
+                "name": "Google Forms",
+                "host": "docs.google.com",
+                "port": 443,
+                "success": true,
+                "response_time": 4.23,
+                "error": null
+            },
+            {
+                "name": "Stripe API",
+                "host": "api.stripe.com",
+                "port": 443,
+                "success": true,
+                "response_time": 26.03,
+                "error": null
+            },
+            {
+                "name": "Stripe JS",
+                "host": "js.stripe.com",
+                "port": 443,
+                "success": true,
+                "response_time": 27.1,
+                "error": null
+            },
+            {
+                "name": "Google OAuth",
+                "host": "accounts.google.com",
+                "port": 443,
+                "success": true,
+                "response_time": 12.73,
+                "error": null
+            },
+            {
+                "name": "Google API",
+                "host": "www.googleapis.com",
+                "port": 443,
+                "success": true,
+                "response_time": 3.72,
+                "error": null
+            },
+            {
+                "name": "QR Server API",
+                "host": "api.qrserver.com",
+                "port": 443,
+                "success": true,
+                "response_time": 16.07,
+                "error": null
+            }
+        ]
+    }
+}

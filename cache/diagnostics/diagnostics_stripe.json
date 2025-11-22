@@ -1,0 +1,106 @@
+{
+    "timestamp": 1763788330,
+    "ttl": 60,
+    "data": {
+        "current_date": "2025-11-21 23:12:09",
+        "api_connected": true,
+        "account_id": "acct_1SPY8EAsZsvo7FHi",
+        "api_error": null,
+        "customers": {
+            "total": 4,
+            "list": [
+                {
+                    "id": "cus_TShrDoElWiy7ic",
+                    "email": "jose.luis.valerio@gmail.com",
+                    "created": 1763701164
+                },
+                {
+                    "id": "cus_TRPr2kCBHi8eB5",
+                    "email": "benchmart.t@gmail.com",
+                    "created": 1763403598
+                },
+                {
+                    "id": "cus_TQhvRbQGilBNRp",
+                    "email": "bruno.ezequiel@gmail.com",
+                    "created": 1763240124
+                },
+                {
+                    "id": "cus_TPIG2lrKQf0OuL",
+                    "email": "jose.luis.valerio@gmail.com",
+                    "created": 1762914064
+                }
+            ],
+            "duplicates": [
+                {
+                    "email": "jose.luis.valerio@gmail.com",
+                    "customer_ids": [
+                        "cus_TShrDoElWiy7ic",
+                        "cus_TPIG2lrKQf0OuL"
+                    ]
+                }
+            ]
+        },
+        "webhooks": {
+            "total": 2,
+            "list": [
+                {
+                    "id": "we_1SVhsdAsZsvo7FHi39YnhvJT",
+                    "url": "https:\/\/gforms.click\/stripe\/webhook",
+                    "status": "enabled",
+                    "enabled_events": [
+                        "checkout.session.async_payment_failed",
+                        "checkout.session.async_payment_succeeded",
+                        "checkout.session.completed",
+                        "checkout.session.expired"
+                    ]
+                },
+                {
+                    "id": "we_1SPx1rAsZsvo7FHiOSgMUYcv",
+                    "url": "https:\/\/nano-morph.com\/stripe\/webhook.php",
+                    "status": "enabled",
+                    "enabled_events": [
+                        "checkout.session.async_payment_failed",
+                        "checkout.session.async_payment_succeeded",
+                        "checkout.session.completed",
+                        "checkout.session.expired"
+                    ]
+                }
+            ]
+        },
+        "subscriptions": {
+            "total": 5,
+            "list": [
+                {
+                    "id": "sub_1SVmROAsZsvo7FHi6yngTxXK",
+                    "customer": "cus_TShrDoElWiy7ic",
+                    "status": "active",
+                    "created": 1763701164
+                },
+                {
+                    "id": "sub_1SUX41AsZsvo7FHijOsdrmkV",
+                    "customer": "cus_TRPr2kCBHi8eB5",
+                    "status": "active",
+                    "created": 1763403727
+                },
+                {
+                    "id": "sub_1SUX1xAsZsvo7FHiwpryrXYu",
+                    "customer": "cus_TRPr2kCBHi8eB5",
+                    "status": "active",
+                    "created": 1763403599
+                },
+                {
+                    "id": "sub_1STqVGAsZsvo7FHiKKoseX6i",
+                    "customer": "cus_TQhvRbQGilBNRp",
+                    "status": "active",
+                    "created": 1763240124
+                },
+                {
+                    "id": "sub_1SSTgEAsZsvo7FHiWEzwU1mr",
+                    "customer": "cus_TPIG2lrKQf0OuL",
+                    "status": "active",
+                    "created": 1762914064
+                }
+            ]
+        }
+    }
+}

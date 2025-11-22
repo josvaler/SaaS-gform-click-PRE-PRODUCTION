@@ -410,7 +410,7 @@ require __DIR__ . '/../views/partials/header.php';
                         <div class="accordion-container">
                             <!-- Connectivity Accordion -->
                             <div class="accordion-item">
-                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-connectivity" id="accordion-header-connectivity">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-connectivity" id="accordion-header-connectivity" data-component="connectivity">
                                     <i class="fas fa-network-wired" style="margin-right: 0.75rem;"></i>
                                     <span><?= t('admin.diagnostics.connectivity') ?></span>
                                     <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
@@ -424,7 +424,7 @@ require __DIR__ . '/../views/partials/header.php';
 
                             <!-- OS Accordion -->
                             <div class="accordion-item">
-                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-os" id="accordion-header-os">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-os" id="accordion-header-os" data-component="os">
                                     <i class="fas fa-server" style="margin-right: 0.75rem;"></i>
                                     <span><?= t('admin.diagnostics.os') ?></span>
                                     <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
@@ -438,7 +438,7 @@ require __DIR__ . '/../views/partials/header.php';
 
                             <!-- Database Accordion -->
                             <div class="accordion-item">
-                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-database" id="accordion-header-database">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-database" id="accordion-header-database" data-component="database">
                                     <i class="fas fa-database" style="margin-right: 0.75rem;"></i>
                                     <span><?= t('admin.diagnostics.database') ?></span>
                                     <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
@@ -452,7 +452,7 @@ require __DIR__ . '/../views/partials/header.php';
 
                             <!-- Stripe Accordion -->
                             <div class="accordion-item">
-                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-stripe" id="accordion-header-stripe">
+                                <button class="accordion-header" aria-expanded="false" aria-controls="accordion-stripe" id="accordion-header-stripe" data-component="stripe">
                                     <i class="fab fa-stripe" style="margin-right: 0.75rem;"></i>
                                     <span><?= t('admin.diagnostics.stripe') ?></span>
                                     <i class="fas fa-chevron-down accordion-icon" aria-hidden="true"></i>
@@ -661,6 +661,26 @@ window.initAccordions = function() {
             } else {
                 header.setAttribute('aria-expanded', 'true');
                 accordionContent.setAttribute('aria-hidden', 'false');
+                
+                // Trigger lazy-loading for diagnostic components
+                const componentType = header.getAttribute('data-component');
+                if (componentType) {
+                    // Load data when accordion opens for first time
+                    if (!header.dataset.loaded) {
+                        setTimeout(() => {
+                            if (componentType === 'connectivity' && typeof window.loadConnectivityData === 'function') {
+                                window.loadConnectivityData();
+                            } else if (componentType === 'os' && typeof window.loadOsData === 'function') {
+                                window.loadOsData();
+                            } else if (componentType === 'database' && typeof window.loadDatabaseData === 'function') {
+                                window.loadDatabaseData();
+                            } else if (componentType === 'stripe' && typeof window.loadStripeData === 'function') {
+                                window.loadStripeData();
+                            }
+                            header.dataset.loaded = 'true';
+                        }, 100);
+                    }
+                }
             }
         });
         
