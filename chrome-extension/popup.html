@@ -11,7 +11,7 @@
         <!-- Login Section -->
         <div id="loginSection" class="section">
             <div class="header">
-                <h1>GForms ShortLinks</h1>
+                <h1>GForms shortLinks v1.0.0</h1>
                 <p class="subtitle">Create shortlinks for Google Forms</p>
             </div>
             <button id="loginBtn" class="btn btn-primary">Login with Google</button>
@@ -23,16 +23,19 @@
 
         <!-- Main Section (shown after login) -->
         <div id="mainSection" class="section" style="display: none;">
-            <div class="header">
-                <div class="user-info">
+            <!-- User Info Card (Centered) -->
+            <div class="user-card">
+                <div class="user-info-centered">
                     <img id="userAvatar" src="" alt="Avatar" class="avatar" style="display: none;">
-                    <div>
+                    <div class="user-details">
                         <h2 id="userName">User</h2>
                         <p class="user-email" id="userEmail"></p>
-                        <span class="badge" id="userPlan">FREE</span>
+                        <div class="badge-container">
+                            <span class="badge" id="userPlan">FREE</span>
+                        </div>
                     </div>
                 </div>
-                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+                <button id="logoutBtn" class="btn btn-secondary btn-small btn-logout">Logout</button>
             </div>
 
             <div class="quota-info" id="quotaInfo">
