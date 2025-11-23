@@ -415,3 +415,268 @@ function generate_link_creation_email_template(array $link, string $baseUrl, str
 HTML;
 }
 
+/**
+ * Generate email template for subscription success
+ * 
+ * @param array $subscriptionData Subscription data from Stripe
+ * @param string $userName User's name or email
+ * @param string $baseUrl Base URL of the application
+ * @return string HTML email template
+ */
+function generate_subscription_success_email_template(array $subscriptionData, string $userName, string $baseUrl): string
+{
+    $planName = html($subscriptionData['plan_name'] ?? 'PREMIUM');
+    $subscriptionId = html($subscriptionData['subscription_id'] ?? 'N/A');
+    $customerId = html($subscriptionData['customer_id'] ?? 'N/A');
+    $billingPeriod = html($subscriptionData['billing_period'] ?? 'monthly');
+    $amount = html($subscriptionData['amount'] ?? 'N/A');
+    $currency = strtoupper(html($subscriptionData['currency'] ?? 'usd'));
+    $expirationDate = !empty($subscriptionData['expiration_date']) 
+        ? date('F d, Y', strtotime($subscriptionData['expiration_date'])) 
+        : 'N/A';
+    $nextBillingDate = !empty($subscriptionData['next_billing_date']) 
+        ? date('F d, Y', strtotime($subscriptionData['next_billing_date'])) 
+        : 'N/A';
+    $billingUrl = rtrim($baseUrl, '/') . '/billing';
+    
+    $greeting = !empty($userName) ? html($userName) : 'Hello';
+    $billingPeriodText = $billingPeriod === 'annual' ? 'Annual' : 'Monthly';
+    
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Activated - GForms</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">🎉 Subscription Activated!</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; color: #334155; font-size: 16px; line-height: 1.6;">
+                                {$greeting},
+                            </p>
+                            <p style="margin: 0 0 30px; color: #334155; font-size: 16px; line-height: 1.6;">
+                                Thank you for subscribing to GForms Premium! Your subscription has been successfully activated. You now have access to all premium features.
+                            </p>
+                            
+                            <!-- Subscription Details Box -->
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; margin-bottom: 30px;">
+                                <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 18px; font-weight: 600;">Subscription Details</h2>
+                                
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600; width: 160px;">Plan:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600;">{$planName} ({$billingPeriodText})</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Amount:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">{$currency} {$amount}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Subscription ID:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 4px 8px; border-radius: 4px; display: inline-block;">{$subscriptionId}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Customer ID:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 4px 8px; border-radius: 4px; display: inline-block;">{$customerId}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Expires:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">{$expirationDate}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Next Billing:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">{$nextBillingDate}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- Features Box -->
+                            <div style="background-color: #ecfdf5; border: 1px solid #10b981; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                                <h3 style="margin: 0 0 12px; color: #059669; font-size: 16px; font-weight: 600;">✨ Premium Features Unlocked:</h3>
+                                <ul style="margin: 0; padding-left: 20px; color: #047857; font-size: 14px; line-height: 1.8;">
+                                    <li>Unlimited link creation</li>
+                                    <li>Custom short codes</li>
+                                    <li>Link expiration dates</li>
+                                    <li>Advanced analytics</li>
+                                    <li>Priority support</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Action Button -->
+                            <table role="presentation" style="width: 100%; margin: 30px 0;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="{$billingUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">Manage Subscription</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+                                You can manage your subscription, update payment methods, and view billing history from your billing dashboard.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="margin: 0 0 10px; color: #64748b; font-size: 14px;">
+                                Thank you for choosing GForms!
+                            </p>
+                            <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                                If you have any questions, please contact us at <a href="mailto:support@gforms.click" style="color: #10b981; text-decoration: none;">support@gforms.click</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
+}
+
+/**
+ * Generate email template for subscription cancellation
+ * 
+ * @param array $subscriptionData Subscription data from Stripe
+ * @param string $userName User's name or email
+ * @param string $baseUrl Base URL of the application
+ * @return string HTML email template
+ */
+function generate_subscription_cancellation_email_template(array $subscriptionData, string $userName, string $baseUrl): string
+{
+    $subscriptionId = html($subscriptionData['subscription_id'] ?? 'N/A');
+    $customerId = html($subscriptionData['customer_id'] ?? 'N/A');
+    $cancellationDate = !empty($subscriptionData['cancellation_date']) 
+        ? date('F d, Y', strtotime($subscriptionData['cancellation_date'])) 
+        : date('F d, Y');
+    $accessUntilDate = !empty($subscriptionData['access_until_date']) 
+        ? date('F d, Y', strtotime($subscriptionData['access_until_date'])) 
+        : 'N/A';
+    $billingUrl = rtrim($baseUrl, '/') . '/billing';
+    
+    $greeting = !empty($userName) ? html($userName) : 'Hello';
+    
+    return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Cancelled - GForms</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 8px 8px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">Subscription Cancelled</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; color: #334155; font-size: 16px; line-height: 1.6;">
+                                {$greeting},
+                            </p>
+                            <p style="margin: 0 0 30px; color: #334155; font-size: 16px; line-height: 1.6;">
+                                We're sorry to see you go. Your subscription has been cancelled as requested.
+                            </p>
+                            
+                            <!-- Important Notice -->
+                            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 20px; margin-bottom: 30px;">
+                                <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6; font-weight: 600;">
+                                    ⚠️ Important: You will continue to have access to premium features until {$accessUntilDate}. After this date, your account will be downgraded to the FREE plan.
+                                </p>
+                            </div>
+                            
+                            <!-- Cancellation Details Box -->
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; margin-bottom: 30px;">
+                                <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 18px; font-weight: 600;">Cancellation Details</h2>
+                                
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600; width: 160px;">Cancelled On:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">{$cancellationDate}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Access Until:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-weight: 600;">{$accessUntilDate}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Subscription ID:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 4px 8px; border-radius: 4px; display: inline-block;">{$subscriptionId}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: #64748b; font-size: 14px; font-weight: 600;">Customer ID:</td>
+                                        <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 4px 8px; border-radius: 4px; display: inline-block;">{$customerId}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <!-- What Happens Next -->
+                            <div style="background-color: #f1f5f9; border-left: 4px solid #64748b; padding: 20px; margin-bottom: 30px;">
+                                <h3 style="margin: 0 0 12px; color: #1e293b; font-size: 16px; font-weight: 600;">What Happens Next?</h3>
+                                <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
+                                    <li>Your premium features will remain active until {$accessUntilDate}</li>
+                                    <li>After this date, your account will automatically downgrade to FREE plan</li>
+                                    <li>All your existing links will remain accessible</li>
+                                    <li>You can resubscribe at any time from your billing dashboard</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <table role="presentation" style="width: 100%; margin: 30px 0;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <a href="{$billingUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; margin-right: 10px;">Resubscribe</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+                                If you have any questions or feedback, we'd love to hear from you. Your satisfaction is important to us.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; text-align: center;">
+                            <p style="margin: 0 0 10px; color: #64748b; font-size: 14px;">
+                                Thank you for being part of GForms!
+                            </p>
+                            <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                                If you have any questions, please contact us at <a href="mailto:support@gforms.click" style="color: #10b981; text-decoration: none;">support@gforms.click</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
+}
+

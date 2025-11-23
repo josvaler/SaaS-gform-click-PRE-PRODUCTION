@@ -7,6 +7,7 @@ if (ob_get_level()) {
 }
 
 use App\Models\UserRepository;
+use App\Services\EmailService;
 use Stripe\StripeClient;
 use Stripe\Webhook;
 
@@ -130,6 +131,11 @@ if ($googleId) {
             if ($type === 'checkout.session.completed' || $type === 'customer.subscription.created') {
                 // Get plan expiration from subscription
                 $planExpiration = null;
+                $subscription = null;
+                $billingPeriod = 'monthly';
+                $amount = null;
+                $currency = 'usd';
+                
                 if ($subscriptionId && class_exists(StripeClient::class)) {
                     try {
                         $stripe = new StripeClient($stripeConfig['secret_key']);
@@ -137,7 +143,19 @@ if ($googleId) {
                         if (isset($subscription->current_period_end)) {
                             $planExpiration = gmdate('Y-m-d H:i:s', (int)$subscription->current_period_end);
                         }
+                        
+                        // Get billing period and amount from subscription
+                        if (isset($subscription->items->data[0]->price->recurring->interval)) {
+                            $billingPeriod = $subscription->items->data[0]->price->recurring->interval === 'year' ? 'annual' : 'monthly';
+                        }
+                        if (isset($subscription->items->data[0]->price->unit_amount)) {
+                            $amount = number_format(($subscription->items->data[0]->price->unit_amount / 100), 2);
+                        }
+                        if (isset($subscription->items->data[0]->price->currency)) {
+                            $currency = $subscription->items->data[0]->price->currency;
+                        }
                     } catch (Throwable $e) {
+                        error_log('Error retrieving subscription details: ' . $e->getMessage());
                     }
                 }
                 
@@ -148,6 +166,14 @@ if ($googleId) {
                         $planExpiration = date('Y-m-d H:i:s', strtotime('+1 year'));
                     } else {
                         $planExpiration = date('Y-m-d H:i:s', strtotime('+1 month'));
+                    }
+                    
+                    // Try to get amount from checkout session
+                    if (isset($data->amount_total)) {
+                        $amount = number_format(($data->amount_total / 100), 2);
+                    }
+                    if (isset($data->currency)) {
+                        $currency = $data->currency;
                     }
                 }
                 
@@ -180,10 +206,75 @@ if ($googleId) {
                     }
                     $userRepo->updateSubscriptionMetadata((int)$user['id'], $updates);
                 }
+                
+                // Send subscription success email
+                try {
+                    $userEmail = $user['email'] ?? null;
+                    if (!empty($userEmail)) {
+                        $emailService = new EmailService();
+                        $userName = $user['name'] ?? $user['email'] ?? '';
+                        
+                        $subscriptionData = [
+                            'plan_name' => 'PREMIUM',
+                            'subscription_id' => $subscriptionId ?? 'N/A',
+                            'customer_id' => $customerId ?? 'N/A',
+                            'billing_period' => $billingPeriod,
+                            'amount' => $amount ?? 'N/A',
+                            'currency' => $currency,
+                            'expiration_date' => $planExpiration,
+                            'next_billing_date' => $planExpiration,
+                        ];
+                        
+                        $emailSubject = 'Welcome to GForms Premium! - Subscription Activated';
+                        $emailBody = generate_subscription_success_email_template($subscriptionData, $userName, $appConfig['base_url']);
+                        
+                        $emailSent = $emailService->send($userEmail, $emailSubject, $emailBody);
+                        if (!$emailSent) {
+                            error_log('Failed to send subscription success email to: ' . $userEmail);
+                        }
+                    }
+                } catch (Throwable $emailError) {
+                    error_log('Error sending subscription success email: ' . $emailError->getMessage());
+                }
             }
 
             if ($type === 'customer.subscription.deleted') {
                 $userRepo->updatePlan((int)$user['id'], 'FREE', null);
+                
+                // Send subscription cancellation email
+                try {
+                    $userEmail = $user['email'] ?? null;
+                    if (!empty($userEmail)) {
+                        $emailService = new EmailService();
+                        $userName = $user['name'] ?? $user['email'] ?? '';
+                        
+                        // Get access until date from subscription (current_period_end if available)
+                        $accessUntilDate = null;
+                        if (isset($data->current_period_end)) {
+                            $accessUntilDate = gmdate('Y-m-d H:i:s', (int)$data->current_period_end);
+                        } else {
+                            // If no period end, access ends immediately
+                            $accessUntilDate = date('Y-m-d H:i:s');
+                        }
+                        
+                        $subscriptionData = [
+                            'subscription_id' => $data->id ?? 'N/A',
+                            'customer_id' => $customerId ?? 'N/A',
+                            'cancellation_date' => date('Y-m-d H:i:s'),
+                            'access_until_date' => $accessUntilDate,
+                        ];
+                        
+                        $emailSubject = 'Subscription Cancelled - GForms';
+                        $emailBody = generate_subscription_cancellation_email_template($subscriptionData, $userName, $appConfig['base_url']);
+                        
+                        $emailSent = $emailService->send($userEmail, $emailSubject, $emailBody);
+                        if (!$emailSent) {
+                            error_log('Failed to send subscription cancellation email to: ' . $userEmail);
+                        }
+                    }
+                } catch (Throwable $emailError) {
+                    error_log('Error sending subscription cancellation email: ' . $emailError->getMessage());
+                }
             }
             
             if ($type === 'customer.subscription.updated') {
@@ -195,6 +286,34 @@ if ($googleId) {
                 // If subscription is past_due, unpaid, or canceled, downgrade to FREE
                 if (in_array($status, ['past_due', 'unpaid', 'canceled', 'incomplete_expired'])) {
                     $userRepo->updatePlan((int)$user['id'], 'FREE', null);
+                    
+                    // Send cancellation email if status is canceled
+                    if ($status === 'canceled') {
+                        try {
+                            $userEmail = $user['email'] ?? null;
+                            if (!empty($userEmail)) {
+                                $emailService = new EmailService();
+                                $userName = $user['name'] ?? $user['email'] ?? '';
+                                
+                                $subscriptionData = [
+                                    'subscription_id' => $data->id ?? 'N/A',
+                                    'customer_id' => $customerId ?? 'N/A',
+                                    'cancellation_date' => date('Y-m-d H:i:s'),
+                                    'access_until_date' => $currentPeriodEnd ?? date('Y-m-d H:i:s'),
+                                ];
+                                
+                                $emailSubject = 'Subscription Cancelled - GForms';
+                                $emailBody = generate_subscription_cancellation_email_template($subscriptionData, $userName, $appConfig['base_url']);
+                                
+                                $emailSent = $emailService->send($userEmail, $emailSubject, $emailBody);
+                                if (!$emailSent) {
+                                    error_log('Failed to send subscription cancellation email to: ' . $userEmail);
+                                }
+                            }
+                        } catch (Throwable $emailError) {
+                            error_log('Error sending subscription cancellation email: ' . $emailError->getMessage());
+                        }
+                    }
                 } elseif ($currentPeriodEnd) {
                     // Update plan_expiration to match subscription period end
                     $userRepo->updatePlan((int)$user['id'], 'PREMIUM', $currentPeriodEnd);
