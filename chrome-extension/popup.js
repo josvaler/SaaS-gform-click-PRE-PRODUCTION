@@ -294,7 +294,25 @@ async function handleCreateShortlink() {
             })
         });
         
-        const data = await response.json();
+        // Get response as text first
+        const responseText = await response.text();
+        console.log('Create response status:', response.status);
+        console.log('Create response text length:', responseText.length);
+        console.log('Create response preview:', responseText.substring(0, 200));
+        
+        // Check if response is empty
+        if (!responseText || responseText.trim().length === 0) {
+            throw new Error('Empty response from server. Status: ' + response.status);
+        }
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Failed to parse response:', e);
+            console.error('Response text:', responseText);
+            throw new Error('Invalid JSON response from server. Status: ' + response.status + '. Response: ' + responseText.substring(0, 200));
+        }
         
         if (!response.ok) {
             throw new Error(data.error || 'Failed to create shortlink');

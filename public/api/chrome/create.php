@@ -1,25 +1,41 @@
 <?php
 declare(strict_types=1);
 
-require __DIR__ . '/../../config/bootstrap.php';
+// Start output buffering to prevent any output before JSON
+ob_start();
 
-header('Content-Type: application/json');
+// Set headers
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Authorization, Content-Type, X-Requested-With');
 
 // Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+if ($requestMethod === 'OPTIONS') {
+    ob_end_clean();
     http_response_code(200);
     exit;
 }
 
-// Only allow POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+// Function to send JSON response and exit
+function sendJsonResponse(int $code, array $data): void {
+    ob_end_clean();
+    http_response_code($code);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
+
+try {
+    // Load bootstrap (inside try-catch to catch any errors)
+    // Path: /public/api/chrome/ -> up 3 levels to root -> config/bootstrap.php
+    require dirname(__DIR__, 3) . "/config/bootstrap.php";
+    
+    // Only allow POST
+    $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    if ($requestMethod !== 'POST') {
+        sendJsonResponse(405, ['success' => false, 'error' => 'Method not allowed']);
+    }
 
 // Get Authorization header from multiple sources (Apache sometimes doesn't pass it directly)
 $authHeader = null;
@@ -43,24 +59,18 @@ elseif (function_exists('getallheaders')) {
 }
 
 if (empty($authHeader)) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Missing Authorization header']);
-    exit;
+    sendJsonResponse(401, ['success' => false, 'error' => 'Missing Authorization header']);
 }
 
 if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Invalid Authorization header format']);
-    exit;
+    sendJsonResponse(401, ['success' => false, 'error' => 'Invalid Authorization header format']);
 }
 
-    $idToken = trim($matches[1]);
+$idToken = trim($matches[1]);
 
-    if (empty($idToken)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Missing id_token']);
-        exit;
-    }
+if (empty($idToken)) {
+    sendJsonResponse(401, ['success' => false, 'error' => 'Missing id_token']);
+}
 
 // Verify id_token directly with Google Client (bootstrap already loaded at top)
 try {
@@ -71,9 +81,7 @@ try {
     $payload = $client->verifyIdToken($idToken);
     
     if (!$payload || !isset($payload['sub'])) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Invalid or expired token']);
-        exit;
+        sendJsonResponse(401, ['success' => false, 'error' => 'Invalid or expired token']);
     }
     
     // Get user from database
@@ -83,9 +91,7 @@ try {
     $user = $userRepo->findByGoogleId($googleId);
     
     if (!$user) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'User not found. Please log in via the web app first.']);
-        exit;
+        sendJsonResponse(401, ['success' => false, 'error' => 'User not found. Please log in via the web app first.']);
     }
     
     // Format user data
@@ -101,9 +107,7 @@ try {
     
 } catch (\Throwable $e) {
     error_log('Chrome create auth error: ' . $e->getMessage());
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => 'Token verification failed']);
-    exit;
+    sendJsonResponse(401, ['success' => false, 'error' => 'Token verification failed']);
 }
 
 // Get request data
@@ -115,9 +119,7 @@ $expirationDate = trim($input['expiration_date'] ?? '');
 
 // Validate required fields
 if (empty($originalUrl)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'original_url is required']);
-    exit;
+    sendJsonResponse(400, ['success' => false, 'error' => 'original_url is required']);
 }
 
 // Initialize services
@@ -128,7 +130,7 @@ $quotaService = new \App\Services\QuotaService($quotaRepo);
 $urlValidator = new \App\Services\UrlValidationService();
 $shortCodeService = new \App\Services\ShortCodeService($shortLinkRepo);
 
-$appConfig = require __DIR__ . '/../../config/config.php';
+$appConfig = require dirname(__DIR__, 3) . "/config/config.php";
 $qrService = new \App\Services\QrCodeService($appConfig['qr_dir'], $appConfig['base_url']);
 
 $currentPlan = $user['plan'] ?? 'FREE';
@@ -138,17 +140,13 @@ $isEnterprise = ($currentPlan === 'ENTERPRISE');
 // Validate Google Forms URL
 $urlValidation = $urlValidator->validateGoogleFormsUrl($originalUrl);
 if (!$urlValidation['valid']) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $urlValidation['error']]);
-    exit;
+    sendJsonResponse(400, ['success' => false, 'error' => $urlValidation['error']]);
 }
 
 // Check quota
 $quotaCheck = $quotaService->canCreateLink((int)$user['id'], $currentPlan);
 if (!$quotaCheck['can_create']) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'error' => $quotaCheck['message']]);
-    exit;
+    sendJsonResponse(403, ['success' => false, 'error' => $quotaCheck['message']]);
 }
 
 // Generate or validate short code
@@ -156,16 +154,12 @@ $shortCode = null;
 if (!empty($customCode) && ($isPremium || $isEnterprise)) {
     $codeValidation = $shortCodeService->validateCustomCode($customCode);
     if (!$codeValidation['valid']) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => $codeValidation['error']]);
-        exit;
+        sendJsonResponse(400, ['success' => false, 'error' => $codeValidation['error']]);
     }
     $shortCode = $codeValidation['sanitized'];
 } else {
     if (!empty($customCode)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Custom codes are only available for PREMIUM and ENTERPRISE plans']);
-        exit;
+        sendJsonResponse(403, ['success' => false, 'error' => 'Custom codes are only available for PREMIUM and ENTERPRISE plans']);
     }
     $shortCode = $shortCodeService->generateRandomCode();
 }
@@ -188,22 +182,16 @@ if (!empty($expirationDate) && ($isPremium || $isEnterprise)) {
     }
     
     if ($parsedDate === null) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid expiration date format. Use MM/DD/YYYY HH:MM']);
-        exit;
+        sendJsonResponse(400, ['success' => false, 'error' => 'Invalid expiration date format. Use MM/DD/YYYY HH:MM']);
     }
     
     if (strtotime($parsedDate) < time()) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Expiration date must be in the future']);
-        exit;
+        sendJsonResponse(400, ['success' => false, 'error' => 'Expiration date must be in the future']);
     }
     
     $expiresAt = $parsedDate;
 } elseif (!empty($expirationDate)) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Expiration dates are only available for PREMIUM and ENTERPRISE plans']);
-    exit;
+    sendJsonResponse(403, ['success' => false, 'error' => 'Expiration dates are only available for PREMIUM and ENTERPRISE plans']);
 }
 
 // Generate QR code
@@ -226,7 +214,7 @@ try {
     $quotaService->recordLinkCreation((int)$user['id']);
     
     // Return success response
-    echo json_encode([
+    sendJsonResponse(200, [
         'success' => true,
         'short_code' => $shortCode,
         'short_url' => $appConfig['base_url'] . '/' . $shortCode,
@@ -243,7 +231,12 @@ try {
     
 } catch (\Throwable $e) {
     error_log('Chrome API create link error: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Failed to create shortlink. Please try again.']);
+    error_log('Stack trace: ' . $e->getTraceAsString());
+    sendJsonResponse(500, ['success' => false, 'error' => 'Failed to create shortlink. Please try again.']);
 }
 
+} catch (\Throwable $e) {
+    error_log('Chrome create endpoint error: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
+    sendJsonResponse(500, ['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
+}
