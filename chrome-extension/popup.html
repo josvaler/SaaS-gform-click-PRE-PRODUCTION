@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GForms ShortLinks</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="loginSection" class="section">
+            <div class="header">
+                <h1>GForms ShortLinks</h1>
+                <p class="subtitle">Create shortlinks for Google Forms</p>
+            </div>
+            <button id="loginBtn" class="btn btn-primary">Login with Google</button>
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Logging in...</p>
+            </div>
+        </div>
+
+        <!-- Main Section (shown after login) -->
+        <div id="mainSection" class="section" style="display: none;">
+            <div class="header">
+                <div class="user-info">
+                    <img id="userAvatar" src="" alt="Avatar" class="avatar" style="display: none;">
+                    <div>
+                        <h2 id="userName">User</h2>
+                        <p class="user-email" id="userEmail"></p>
+                        <span class="badge" id="userPlan">FREE</span>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="btn btn-secondary btn-small">Logout</button>
+            </div>
+
+            <div class="quota-info" id="quotaInfo">
+                <div class="quota-item">
+                    <span class="quota-label">Daily:</span>
+                    <span class="quota-value" id="dailyQuota">0/10</span>
+                </div>
+                <div class="quota-item">
+                    <span class="quota-label">Monthly:</span>
+                    <span class="quota-value" id="monthlyQuota">0/200</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="urlInput">Google Forms URL</label>
+                <input type="url" id="urlInput" placeholder="https://docs.google.com/forms/d/e/..." />
+                <button id="useCurrentBtn" class="btn btn-link">Use Current Tab</button>
+            </div>
+
+            <div class="form-group">
+                <label for="labelInput">Label (Optional)</label>
+                <input type="text" id="labelInput" placeholder="My Form" />
+            </div>
+
+            <button id="createBtn" class="btn btn-primary btn-block">Create Shortlink</button>
+
+            <div id="messages"></div>
+
+            <div id="result" class="result" style="display: none;">
+                <h3>Shortlink Created!</h3>
+                <div class="shortlink-display">
+                    <input type="text" id="shortlinkUrl" readonly />
+                    <button id="copyBtn" class="btn btn-secondary">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
+

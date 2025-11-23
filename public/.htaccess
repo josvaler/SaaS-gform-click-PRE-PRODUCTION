@@ -20,6 +20,14 @@ RewriteRule ^stripe/webhook\.php$ stripe/webhook.php [L,QSA]
 # Also allow clean URL for backward compatibility
 RewriteRule ^stripe/webhook$ stripe/webhook.php [L,QSA]
 
+# --- Chrome Extension API routes (must come before general .php rule) ---
+# Allow clean URLs for Chrome API endpoints
+RewriteRule ^api/chrome/auth/verify$ api/chrome/auth/verify.php [L,QSA]
+RewriteRule ^api/chrome/create$ api/chrome/create.php [L,QSA]
+
+# Pass Authorization header to PHP (for mod_rewrite compatibility)
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
 # --- Quitar .php de las URLs ---
 # Si el archivo existe con .php, servirlo sin mostrar la extensión
 RewriteCond %{REQUEST_FILENAME}.php -f

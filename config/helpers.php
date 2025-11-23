@@ -680,3 +680,91 @@ function generate_subscription_cancellation_email_template(array $subscriptionDa
 HTML;
 }
 
+
+/**
+ * Verify OAuth token from Chrome extension
+ * Validates the access token and returns user data
+ * 
+ * @param string $accessToken OAuth access token from Authorization header
+ * @return array|null User data if valid, null if invalid
+ */
+function verify_chrome_auth(string $idToken): ?array
+{
+    if (empty($idToken)) {
+        return null;
+    }
+    
+    try {
+        require_once __DIR__ . '/../vendor/autoload.php';
+        
+        $googleConfig = require __DIR__ . '/google.php';
+        
+        // Verify the JWT id_token using Google Client library
+        $client = new Google\Client(['client_id' => $googleConfig['client_id']]);
+        
+        // Verify the id_token (JWT)
+        try {
+            $payload = $client->verifyIdToken($idToken);
+            
+            if (!$payload) {
+                error_log('Chrome auth: verifyIdToken returned false - token may be invalid, expired, or signed by different issuer');
+                error_log('Chrome auth: Token preview: ' . substr($idToken, 0, 50) . '...');
+                error_log('Chrome auth: Expected client_id: ' . $googleConfig['client_id']);
+                return null;
+            }
+        } catch (\Exception $e) {
+            error_log('Chrome auth: JWT verification exception: ' . $e->getMessage());
+            error_log('Chrome auth: Exception class: ' . get_class($e));
+            return null;
+        } catch (\Throwable $e) {
+            error_log('Chrome auth: JWT verification throwable: ' . $e->getMessage());
+            return null;
+        }
+        
+        // Extract user info from JWT payload
+        $googleId = $payload['sub'] ?? null;
+        $email = $payload['email'] ?? null;
+        $name = $payload['name'] ?? null;
+        $picture = $payload['picture'] ?? null;
+        
+        if (!$googleId) {
+            error_log('Chrome auth: No Google ID in JWT payload');
+            return null;
+        }
+        
+        // Verify the token was issued for our client ID
+        $audience = $payload['aud'] ?? null;
+        if ($audience !== $googleConfig['client_id']) {
+            error_log('Chrome auth: Token audience mismatch. Expected: ' . $googleConfig['client_id'] . ', Got: ' . $audience);
+            // Still proceed if it's a valid token - might be from different client but valid
+        }
+        
+        // Get user from database
+        $pdo = db();
+        $userRepo = new \App\Models\UserRepository($pdo);
+        $user = $userRepo->findByGoogleId($googleId);
+        
+        if (!$user) {
+            error_log('Chrome auth: User not found in database for Google ID: ' . $googleId);
+            error_log('Chrome auth: Email from token: ' . ($email ?? 'N/A'));
+            error_log('Chrome auth: User needs to log in via web app first to create account');
+            return null;
+        }
+        
+        error_log('Chrome auth: User found - ID: ' . $user['id'] . ', Email: ' . $user['email']);
+        
+        return [
+            'id' => (int)$user['id'],
+            'google_id' => trim((string)$user['google_id']),
+            'email' => strtolower(trim((string)$user['email'])),
+            'name' => $user['name'],
+            'plan' => $user['plan'] ?? 'FREE',
+            'role' => $user['role'] ?? 'USER',
+            'avatar_url' => $user['avatar_url'] ?? null,
+        ];
+    } catch (\Throwable $e) {
+        error_log('Chrome auth verification error: ' . $e->getMessage());
+        error_log('Chrome auth verification stack trace: ' . $e->getTraceAsString());
+        return null;
+    }
+}

@@ -1,0 +1,250 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    width: 400px;
+    min-height: 500px;
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.container {
+    padding: 20px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 24px;
+    color: #4CAF50;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 14px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #4CAF50;
+}
+
+.user-info h2 {
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.user-email {
+    font-size: 12px;
+    color: #888;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #4CAF50;
+    color: #1a1a1a;
+    margin-top: 4px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: #1a1a1a;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+}
+
+.btn-secondary {
+    background: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+.btn-secondary:hover {
+    background: #444;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn-link {
+    background: none;
+    color: #4CAF50;
+    text-decoration: underline;
+    padding: 5px 0;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-link:hover {
+    color: #45a049;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 13px;
+    color: #bbb;
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #2a2a2a;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.quota-info {
+    display: flex;
+    gap: 20px;
+    padding: 12px;
+    background: #2a2a2a;
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+
+.quota-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.quota-label {
+    font-size: 11px;
+    color: #888;
+}
+
+.quota-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    border: 3px solid #333;
+    border-top: 3px solid #4CAF50;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#messages {
+    min-height: 20px;
+}
+
+.message {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.message.error {
+    background: #d32f2f;
+    color: #fff;
+}
+
+.message.success {
+    background: #4CAF50;
+    color: #1a1a1a;
+}
+
+.result {
+    padding: 15px;
+    background: #2a2a2a;
+    border-radius: 6px;
+    border: 1px solid #4CAF50;
+    margin-top: 15px;
+}
+
+.result h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #4CAF50;
+}
+
+.shortlink-display {
+    display: flex;
+    gap: 8px;
+}
+
+.shortlink-display input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #1a1a1a;
+    color: #4CAF50;
+    font-size: 13px;
+    font-family: monospace;
+}
+
