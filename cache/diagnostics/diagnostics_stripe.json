@@ -1,8 +1,8 @@
 {
-    "timestamp": 1763788330,
+    "timestamp": 1763836478,
     "ttl": 60,
     "data": {
-        "current_date": "2025-11-21 23:12:09",
+        "current_date": "2025-11-22 12:34:36",
         "api_connected": true,
         "account_id": "acct_1SPY8EAsZsvo7FHi",
         "api_error": null,
@@ -10,9 +10,9 @@
             "total": 4,
             "list": [
                 {
-                    "id": "cus_TShrDoElWiy7ic",
+                    "id": "cus_TT6XoPXqhqpz95",
                     "email": "jose.luis.valerio@gmail.com",
-                    "created": 1763701164
+                    "created": 1763793002
                 },
                 {
                     "id": "cus_TRPr2kCBHi8eB5",
@@ -34,7 +34,7 @@
                 {
                     "email": "jose.luis.valerio@gmail.com",
                     "customer_ids": [
-                        "cus_TShrDoElWiy7ic",
+                        "cus_TT6XoPXqhqpz95",
                         "cus_TPIG2lrKQf0OuL"
                     ]
                 }
@@ -71,10 +71,10 @@
             "total": 5,
             "list": [
                 {
-                    "id": "sub_1SVmROAsZsvo7FHi6yngTxXK",
-                    "customer": "cus_TShrDoElWiy7ic",
+                    "id": "sub_1SWAKfAsZsvo7FHisvro5wNk",
+                    "customer": "cus_TT6XoPXqhqpz95",
                     "status": "active",
-                    "created": 1763701164
+                    "created": 1763793002
                 },
                 {
                     "id": "sub_1SUX41AsZsvo7FHijOsdrmkV",

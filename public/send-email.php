@@ -14,7 +14,7 @@ $messageType = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $to = trim($_POST['email'] ?? $user['email'] ?? '');
-    $subject = trim($_POST['subject'] ?? 'Test Email from GForms');
+    $subject = trim($_POST['subject'] ?? 'SR Support');
     $body = trim($_POST['body'] ?? '<h1>Gforms Support</h1><p>Please, replace this text with yours</p>');
     
     if (empty($to)) {
@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input 
                 type="text" 
                 name="subject" 
-                value="Test Email from GForms" 
+                value="Email from GForms" 
                 required
             >
         </div>
@@ -176,8 +176,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 name="body" 
                 rows="10" 
                 required
-            ><h1>Test Email</h1>
-<p>GForms Support.</p>
+            ><h1>GForms Support</h1>
+<H3>Mail Assistance</H3>
+<p></p>
+<p>Write your message here...</p>
 <p>This is an emergency email you can contact us by mail to <a href="mailto:support@gforms.click">support@gforms.click</a></p></textarea>
         </div>
         

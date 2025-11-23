@@ -1,4 +1,0 @@
-﻿Email,"Customer ID","Subscription Status","Database Plan","Sync Status",Issues
-liavousaidera@gmail.com,cus_TSg8xCV7z9kxlD,NONE,PREMIUM,MISMATCH,"DB shows PREMIUM but no active Stripe subscription"
-jose.luis.valerio@gmail.com,cus_TSfSC0SwtUXUoC,NONE,PREMIUM,MISMATCH,"DB shows PREMIUM but no active Stripe subscription"
-valereilromano@gmail.com,cus_TSg42HCNKhLrXE,NONE,PREMIUM,MISMATCH,"DB shows PREMIUM but no active Stripe subscription"
