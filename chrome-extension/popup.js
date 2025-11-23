@@ -63,7 +63,7 @@ async function checkAuth() {
 
 // Show login section
 function showLoginSection() {
-    loginSection.style.display = 'block';
+    loginSection.style.display = 'flex';
     mainSection.style.display = 'none';
     clearMessages();
 }
@@ -71,7 +71,7 @@ function showLoginSection() {
 // Show main section
 function showMainSection() {
     loginSection.style.display = 'none';
-    mainSection.style.display = 'block';
+    mainSection.style.display = 'flex';
     result.style.display = 'none';
 }
 
@@ -201,8 +201,43 @@ async function loadUserInfo() {
         if (response.ok) {
             const data = await response.json();
             if (data.quota) {
-                dailyQuota.textContent = `${data.quota.daily_used}/${data.quota.daily_limit || '∞'}`;
-                monthlyQuota.textContent = `${data.quota.monthly_used}/${data.quota.monthly_limit || '∞'}`;
+                // Calculate remaining quota
+                const dailyRemaining = data.quota.daily_limit === null 
+                    ? '∞' 
+                    : Math.max(0, data.quota.daily_limit - data.quota.daily_used);
+                const monthlyRemaining = data.quota.monthly_limit === null 
+                    ? '∞' 
+                    : Math.max(0, data.quota.monthly_limit - data.quota.monthly_used);
+                
+                // Display format: used/limit (remaining available)
+                if (data.quota.daily_limit === null) {
+                    dailyQuota.textContent = `${data.quota.daily_used}/∞`;
+                } else {
+                    dailyQuota.textContent = `${data.quota.daily_used}/${data.quota.daily_limit}`;
+                    if (dailyRemaining > 0) {
+                        dailyQuota.textContent += ` (${dailyRemaining} left)`;
+                    } else {
+                        dailyQuota.textContent += ' (limit reached)';
+                    }
+                }
+                    
+                if (data.quota.monthly_limit === null) {
+                    monthlyQuota.textContent = `${data.quota.monthly_used}/∞`;
+                } else {
+                    monthlyQuota.textContent = `${data.quota.monthly_used}/${data.quota.monthly_limit}`;
+                    if (monthlyRemaining > 0) {
+                        monthlyQuota.textContent += ` (${monthlyRemaining} left)`;
+                    } else {
+                        monthlyQuota.textContent += ' (limit reached)';
+                    }
+                }
+                
+                // Log quota for debugging
+                console.log('Quota Status:', {
+                    daily: `${data.quota.daily_used}/${data.quota.daily_limit} (${dailyRemaining} remaining)`,
+                    monthly: `${data.quota.monthly_used}/${data.quota.monthly_limit} (${monthlyRemaining} remaining)`,
+                    can_create: data.quota.can_create
+                });
             }
         }
     } catch (error) {

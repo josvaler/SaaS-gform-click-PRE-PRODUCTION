@@ -10,7 +10,8 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://*/*"
+    "https://docs.google.com/forms/*",
+    "https://gforms.click/*"
   ],
   "action": {
     "default_popup": "popup.html",
