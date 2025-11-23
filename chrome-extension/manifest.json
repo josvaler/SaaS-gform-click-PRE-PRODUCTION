@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "GForms ShortLinks",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "Create shortlinks for Google Forms directly from your browser",
   "permissions": [
     "activeTab",
     "storage",
-    "identity",
-    "tabs"
+    "identity"
   ],
   "host_permissions": [
     "https://docs.google.com/forms/*",

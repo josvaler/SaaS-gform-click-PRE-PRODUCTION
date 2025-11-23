@@ -5,6 +5,7 @@
             <div class="nav-links" style="justify-content: center; margin-bottom: 1rem;">
                 <a href="/terms">Terms & Conditions</a>
                 <a href="/privacy">Privacy Policy</a>
+                <a href="/support">Support</a>
                 <a href="#" id="manage-cookies-link" style="cursor: pointer;">Manage Cookies</a>
             </div>
             <p style="margin-bottom: 0.5rem; text-align: center;">

@@ -100,12 +100,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-// Open promotional page on installation/update
-chrome.runtime.onInstalled.addListener((details) => {
-    if (details.reason === 'install' || details.reason === 'update') {
-        chrome.tabs.create({
-            url: 'https://gforms.click/promotional.html?text=Thanks%20for%20installing%20our%20plugin&button=Start%20using%20our%20site%20here'
-        });
-    }
-});
-
