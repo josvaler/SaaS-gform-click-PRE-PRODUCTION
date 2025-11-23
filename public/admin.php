@@ -160,10 +160,16 @@ require __DIR__ . '/../views/partials/header.php';
                 <div>
                     <h2 style="margin: 0; font-size: 1.75rem; font-weight: 700;"><?= t('admin.title') ?></h2>
                 </div>
-                <button id="minitopBtn" class="minitop-button" onclick="openMiniTopModal()" title="Open Mini-TOP System Monitor">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Mini-TOP</span>
-                </button>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="sendEmailBtn" class="send-email-button" onclick="openSendEmailModal()" title="Send Email">
+                        <i class="fas fa-envelope"></i>
+                        <span>Send Email</span>
+                    </button>
+                    <button id="minitopBtn" class="minitop-button" onclick="openMiniTopModal()" title="Open Mini-TOP System Monitor">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Mini-TOP</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Tabs Container -->
@@ -757,6 +763,22 @@ window.initAccordions = function() {
 })();
 </script>
 
+<!-- Send Email Modal -->
+<div id="sendEmailModal" class="send-email-modal" style="display: none;">
+    <div class="send-email-modal-overlay" onclick="closeSendEmailModal()"></div>
+    <div class="send-email-modal-container">
+        <div class="send-email-modal-header">
+            <h3>Send Email</h3>
+            <button class="send-email-modal-close" onclick="closeSendEmailModal()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="send-email-modal-body">
+            <?php require __DIR__ . '/send-email.php'; ?>
+        </div>
+    </div>
+</div>
+
 <!-- Mini-TOP Modal -->
 <div id="minitopModal" class="minitop-modal" style="display: none;">
     <div class="minitop-modal-overlay" onclick="closeMiniTopModal()"></div>
@@ -774,6 +796,138 @@ window.initAccordions = function() {
 </div>
 
 <style>
+/* Send Email Button Styles */
+.send-email-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3), 0 2px 4px -1px rgba(16, 185, 129, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.send-email-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.send-email-button:hover::before {
+    left: 100%;
+}
+
+.send-email-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.3);
+}
+
+.send-email-button:active {
+    transform: translateY(0);
+}
+
+.send-email-button i {
+    font-size: 1rem;
+}
+
+/* Send Email Modal Styles */
+.send-email-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.send-email-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.send-email-modal-container {
+    position: relative;
+    width: 95%;
+    max-width: 1000px;
+    height: 85vh;
+    max-height: 800px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+.send-email-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.send-email-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.send-email-modal-close {
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #e2e8f0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.send-email-modal-close:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.send-email-modal-body {
+    flex: 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
 /* Mini-TOP Button Styles */
 .minitop-button {
     display: inline-flex;
@@ -954,10 +1108,34 @@ window.initAccordions = function() {
         padding: 0.75rem;
         min-width: 2.5rem;
     }
+    
+    .send-email-button {
+        padding: 0.75rem;
+        min-width: 2.5rem;
+    }
 }
 </style>
 
 <script>
+// Send Email Modal Functions
+function openSendEmailModal() {
+    const modal = document.getElementById('sendEmailModal');
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeSendEmailModal() {
+    const modal = document.getElementById('sendEmailModal');
+    
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
 // Mini-TOP Modal Functions
 function openMiniTopModal() {
     const modal = document.getElementById('minitopModal');
@@ -984,8 +1162,12 @@ function closeMiniTopModal() {
 // Close modal on ESC key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        const modal = document.getElementById('minitopModal');
-        if (modal && modal.style.display !== 'none') {
+        const sendEmailModal = document.getElementById('sendEmailModal');
+        const minitopModal = document.getElementById('minitopModal');
+        
+        if (sendEmailModal && sendEmailModal.style.display !== 'none') {
+            closeSendEmailModal();
+        } else if (minitopModal && minitopModal.style.display !== 'none') {
             closeMiniTopModal();
         }
     }

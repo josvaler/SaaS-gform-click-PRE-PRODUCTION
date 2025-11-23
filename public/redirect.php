@@ -19,7 +19,7 @@ if (($pos = strpos($shortCode, '?')) !== false) {
 }
 
 // Skip if it's a known route or file
-$knownRoutes = ['login', 'dashboard', 'profile', 'create-link', 'links', 'link', 'pricing', 'billing', 'logout', 'admin', 'stripe', 'qr', 'assets', 'redirect'];
+$knownRoutes = ['login', 'dashboard', 'profile', 'create-link', 'links', 'link', 'pricing', 'billing', 'logout', 'admin', 'stripe', 'qr', 'assets', 'redirect', 'send-email'];
 if (in_array($shortCode, $knownRoutes) || strpos($shortCode, '.') !== false || empty($shortCode)) {
     http_response_code(404);
     die('Not found');

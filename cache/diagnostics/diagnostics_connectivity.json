@@ -1,5 +1,5 @@
 {
-    "timestamp": 1763788286,
+    "timestamp": 1763843258,
     "ttl": 30,
     "data": {
         "servers": [
@@ -8,7 +8,7 @@
                 "host": "docs.google.com",
                 "port": 443,
                 "success": true,
-                "response_time": 4.23,
+                "response_time": 6.49,
                 "error": null
             },
             {
@@ -16,7 +16,7 @@
                 "host": "api.stripe.com",
                 "port": 443,
                 "success": true,
-                "response_time": 26.03,
+                "response_time": 24.3,
                 "error": null
             },
             {
@@ -24,7 +24,7 @@
                 "host": "js.stripe.com",
                 "port": 443,
                 "success": true,
-                "response_time": 27.1,
+                "response_time": 26.55,
                 "error": null
             },
             {
@@ -32,7 +32,7 @@
                 "host": "accounts.google.com",
                 "port": 443,
                 "success": true,
-                "response_time": 12.73,
+                "response_time": 11.76,
                 "error": null
             },
             {
@@ -40,7 +40,7 @@
                 "host": "www.googleapis.com",
                 "port": 443,
                 "success": true,
-                "response_time": 3.72,
+                "response_time": 4.28,
                 "error": null
             },
             {
@@ -48,7 +48,7 @@
                 "host": "api.qrserver.com",
                 "port": 443,
                 "success": true,
-                "response_time": 16.07,
+                "response_time": 35.9,
                 "error": null
             }
         ]

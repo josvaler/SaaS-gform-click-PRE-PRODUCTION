@@ -1,35 +1,35 @@
 {
-    "timestamp": 1763788324,
+    "timestamp": 1763804501,
     "ttl": 30,
     "data": {
-        "current_date": "2025-11-21 23:12:04",
+        "current_date": "2025-11-22 03:41:41",
         "connections": {
-            "threads_connected": "1",
-            "threads_running": "1",
+            "threads_connected": "4",
+            "threads_running": "2",
             "max_used_connections": "5",
-            "aborted_connects": "241"
+            "aborted_connects": "367"
         },
         "qps": {
-            "qps": 0.16895863811677084,
-            "uptime": "37595",
-            "queries": "6352"
+            "qps": 0.2013315480175556,
+            "uptime": "53772",
+            "queries": "10826"
         },
         "slow_queries": {
             "slow_queries": "0"
         },
         "handler_latencies": {
             "handler_read_first": "3",
-            "handler_read_key": "1185",
-            "handler_read_next": "1054",
-            "handler_read_prev": "19",
-            "handler_read_rnd": "752",
-            "handler_read_rnd_next": "6913",
-            "handler_write": "68"
+            "handler_read_key": "2242",
+            "handler_read_next": "1129",
+            "handler_read_prev": "109",
+            "handler_read_rnd": "894",
+            "handler_read_rnd_next": "7823",
+            "handler_write": "76"
         },
         "buffer_pool": {
             "innodb_buffer_pool_reads": "247",
-            "innodb_buffer_pool_read_requests": "17841",
-            "hit_rate": 98.61554845580405
+            "innodb_buffer_pool_read_requests": "22431",
+            "hit_rate": 98.89884534795596
         },
         "iops": {
             "innodb_data_reads": "265",
