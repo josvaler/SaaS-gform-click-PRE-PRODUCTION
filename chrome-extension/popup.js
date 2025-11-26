@@ -21,6 +21,7 @@ const userPlan = document.getElementById('userPlan');
 const userAvatar = document.getElementById('userAvatar');
 const dailyQuota = document.getElementById('dailyQuota');
 const monthlyQuota = document.getElementById('monthlyQuota');
+const extensionTitle = document.getElementById('extensionTitle');
 
 // State
 let currentToken = null;
@@ -28,6 +29,8 @@ let currentUser = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+    // Update version from manifest
+    updateVersionInTitle();
     await checkAuth();
     setupEventListeners();
     await loadCurrentTabUrl();
@@ -40,6 +43,23 @@ function setupEventListeners() {
     createBtn.addEventListener('click', handleCreateShortlink);
     useCurrentBtn.addEventListener('click', handleUseCurrentTab);
     copyBtn.addEventListener('click', handleCopyShortlink);
+}
+
+// Update version in title from manifest
+function updateVersionInTitle() {
+    try {
+        const manifest = chrome.runtime.getManifest();
+        const version = manifest.version;
+        if (extensionTitle && version) {
+            extensionTitle.textContent = `GForms shortLinks v${version}`;
+        }
+    } catch (error) {
+        console.error('Error updating version in title:', error);
+        // Fallback to default if manifest read fails
+        if (extensionTitle) {
+            extensionTitle.textContent = 'GForms shortLinks';
+        }
+    }
 }
 
 // Decode JWT token to check expiration
