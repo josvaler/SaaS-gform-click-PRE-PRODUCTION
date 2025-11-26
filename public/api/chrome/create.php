@@ -213,6 +213,49 @@ try {
     // Record quota usage
     $quotaService->recordLinkCreation((int)$user['id']);
     
+    // Send confirmation email to user
+    try {
+        error_log('Chrome API: Starting email sending process for link: ' . $shortCode);
+        error_log('Chrome API: User data - ID: ' . (int)$user['id'] . ', Email: ' . ($user['email'] ?? 'NOT SET') . ', Name: ' . ($user['name'] ?? 'NOT SET'));
+        
+        $userEmail = $user['email'] ?? null;
+        if (empty($userEmail)) {
+            error_log('Chrome API: User email is empty or null, skipping email send. User ID: ' . (int)$user['id']);
+        } else {
+            error_log('Chrome API: Attempting to send email to: ' . $userEmail . ' for link: ' . $shortCode);
+            
+            // Check if helper function exists
+            if (!function_exists('generate_link_creation_email_template')) {
+                error_log('Chrome API: ERROR - generate_link_creation_email_template function not found!');
+            } else {
+                error_log('Chrome API: Helper function exists, generating email template...');
+            }
+            
+            $emailService = new \App\Services\EmailService();
+            $userName = $user['name'] ?? $user['email'] ?? '';
+            $emailSubject = 'Your Short Link Has Been Created - GForms';
+            
+            try {
+                $emailBody = generate_link_creation_email_template($link, $appConfig['base_url'], $userName);
+                error_log('Chrome API: Email template generated successfully');
+            } catch (\Throwable $templateError) {
+                error_log('Chrome API: Error generating email template - ' . $templateError->getMessage());
+                throw $templateError;
+            }
+            
+            $emailSent = $emailService->send($userEmail, $emailSubject, $emailBody);
+            if ($emailSent) {
+                error_log('Chrome API: Email sent successfully to: ' . $userEmail);
+            } else {
+                error_log('Chrome API: Failed to send email to: ' . $userEmail . '. Check SMTP configuration and error logs.');
+            }
+        }
+    } catch (\Throwable $emailError) {
+        // Log email error but don't fail the link creation
+        error_log('Chrome API: Exception in email sending - ' . $emailError->getMessage());
+        error_log('Chrome API: Email error trace: ' . $emailError->getTraceAsString());
+    }
+    
     // Return success response
     sendJsonResponse(200, [
         'success' => true,

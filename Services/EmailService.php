@@ -17,10 +17,19 @@ class EmailService
         
         // SMTP Configuration
         $this->mailer->isSMTP();
-        $this->mailer->Host = env('SMTP_HOST', 'smtp.gmail.com');
+        $smtpHost = env('SMTP_HOST', 'smtp.gmail.com');
+        $smtpUsername = env('SMTP_USERNAME', '');
+        $smtpPassword = env('SMTP_PASSWORD', '');
+        
+        // Validate SMTP configuration
+        if (empty($smtpUsername) || empty($smtpPassword)) {
+            error_log("EmailService: Warning - SMTP credentials not configured. SMTP_USERNAME or SMTP_PASSWORD is empty.");
+        }
+        
+        $this->mailer->Host = $smtpHost;
         $this->mailer->SMTPAuth = true;
-        $this->mailer->Username = env('SMTP_USERNAME');
-        $this->mailer->Password = env('SMTP_PASSWORD');
+        $this->mailer->Username = $smtpUsername;
+        $this->mailer->Password = $smtpPassword;
         
         // Determine encryption based on port
         $port = (int)env('SMTP_PORT', '587');
@@ -43,16 +52,21 @@ class EmailService
         ];
         
         // Sender
-        $this->mailer->setFrom(
-            env('SMTP_FROM_EMAIL', 'noreply@gforms.click'),
-            env('SMTP_FROM_NAME', 'GForms')
-        );
+        $fromEmail = env('SMTP_FROM_EMAIL', 'noreply@gforms.click');
+        $fromName = env('SMTP_FROM_NAME', 'GForms');
+        $this->mailer->setFrom($fromEmail, $fromName);
         
         // Character encoding
         $this->mailer->CharSet = 'UTF-8';
         
         // Debug (set to 0 in production)
-        $this->mailer->SMTPDebug = (int)env('SMTP_DEBUG', '0');
+        $debugLevel = (int)env('SMTP_DEBUG', '0');
+        $this->mailer->SMTPDebug = $debugLevel;
+        
+        if ($debugLevel > 0) {
+            error_log("EmailService: SMTP Debug enabled (level {$debugLevel})");
+            error_log("EmailService: Configuration - Host: {$smtpHost}, Port: {$port}, From: {$fromEmail}");
+        }
     }
     
     /**
@@ -73,6 +87,11 @@ class EmailService
         ?string $replyTo = null
     ): bool {
         try {
+            // Log email attempt
+            $smtpHost = env('SMTP_HOST', 'smtp.gmail.com');
+            $smtpUser = env('SMTP_USERNAME', '');
+            error_log("EmailService: Attempting to send email to {$to} via {$smtpHost} as {$smtpUser}");
+            
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($to);
             
@@ -87,12 +106,21 @@ class EmailService
             $result = $this->mailer->send();
             
             if (!$result) {
-                error_log("Email send failed: {$this->mailer->ErrorInfo}");
+                $errorInfo = $this->mailer->ErrorInfo ?? 'No error info available';
+                error_log("EmailService: Send failed to {$to}");
+                error_log("EmailService: Error details - {$errorInfo}");
+                error_log("EmailService: SMTP Host: {$smtpHost}, Port: " . $this->mailer->Port);
+                error_log("EmailService: SMTP Username set: " . (!empty($smtpUser) ? 'Yes' : 'No'));
+                error_log("EmailService: SMTP Password set: " . (!empty(env('SMTP_PASSWORD', '')) ? 'Yes' : 'No'));
+            } else {
+                error_log("EmailService: Email sent successfully to {$to}");
             }
             
             return $result;
         } catch (Exception $e) {
-            error_log("Email exception: {$e->getMessage()}");
+            error_log("EmailService: Exception sending email to {$to}");
+            error_log("EmailService: Exception message - {$e->getMessage()}");
+            error_log("EmailService: Exception trace - {$e->getTraceAsString()}");
             return false;
         }
     }

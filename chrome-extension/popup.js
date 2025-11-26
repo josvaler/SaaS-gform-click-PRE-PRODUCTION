@@ -42,12 +42,53 @@ function setupEventListeners() {
     copyBtn.addEventListener('click', handleCopyShortlink);
 }
 
-// Check if user is authenticated
+// Decode JWT token to check expiration
+function decodeJWT(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error('Error decoding JWT:', e);
+        return null;
+    }
+}
+
+// Check if token is expired (with 5 minute buffer)
+function isTokenExpired(token) {
+    if (!token) return true;
+    
+    const payload = decodeJWT(token);
+    if (!payload || !payload.exp) return true;
+    
+    // Check if token expires within 5 minutes (300 seconds)
+    const expirationTime = payload.exp * 1000; // Convert to milliseconds
+    const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const now = Date.now();
+    
+    return (expirationTime - now) < bufferTime;
+}
+
+// Check if user is authenticated and token is valid
 async function checkAuth() {
     try {
         const data = await chrome.storage.local.get(['idToken', 'user']);
         
         if (data.idToken && data.user) {
+            // Check if token is expired
+            if (isTokenExpired(data.idToken)) {
+                console.log('Token expired, clearing storage and showing login');
+                await chrome.storage.local.clear();
+                currentToken = null;
+                currentUser = null;
+                showLoginSection();
+                showError('Your session has expired. Please log in again.');
+                return;
+            }
+            
             currentToken = data.idToken;
             currentUser = data.user;
             showMainSection();
@@ -59,6 +100,16 @@ async function checkAuth() {
         console.error('Auth check error:', error);
         showLoginSection();
     }
+}
+
+// Handle token expiration and re-authenticate if needed
+async function handleTokenExpiration() {
+    console.log('Token expired, clearing storage and prompting for re-login');
+    await chrome.storage.local.clear();
+    currentToken = null;
+    currentUser = null;
+    showLoginSection();
+    showError('Your session has expired. Please log in again to continue.');
 }
 
 // Show login section
@@ -179,6 +230,12 @@ async function handleLogout() {
 async function loadUserInfo() {
     if (!currentUser) return;
     
+    // Check if token is expired before making request
+    if (!currentToken || isTokenExpired(currentToken)) {
+        await handleTokenExpiration();
+        return;
+    }
+    
     try {
         userName.textContent = currentUser.name || 'User';
         userEmail.textContent = currentUser.email || '';
@@ -197,6 +254,12 @@ async function loadUserInfo() {
                 'Content-Type': 'application/json'
             }
         });
+        
+        // Check for token expiration
+        if (response.status === 401) {
+            await handleTokenExpiration();
+            return;
+        }
         
         if (response.ok) {
             const data = await response.json();
@@ -242,6 +305,7 @@ async function loadUserInfo() {
         }
     } catch (error) {
         console.error('Error loading user info:', error);
+        // Don't show error for quota loading failures, just log them
     }
 }
 
@@ -313,6 +377,12 @@ async function handleCreateShortlink() {
         return;
     }
     
+    // Check if token is expired before making request
+    if (!currentToken || isTokenExpired(currentToken)) {
+        await handleTokenExpiration();
+        return;
+    }
+    
     try {
         loading.style.display = 'block';
         clearMessages();
@@ -349,12 +419,36 @@ async function handleCreateShortlink() {
             throw new Error('Invalid JSON response from server. Status: ' + response.status + '. Response: ' + responseText.substring(0, 200));
         }
         
+        // Check for token expiration errors
         if (!response.ok) {
-            throw new Error(data.error || 'Failed to create shortlink');
+            const errorMsg = data.error || 'Failed to create shortlink';
+            
+            // Check if error is related to token expiration
+            if (response.status === 401 || 
+                errorMsg.toLowerCase().includes('invalid') && errorMsg.toLowerCase().includes('token') ||
+                errorMsg.toLowerCase().includes('expired') ||
+                errorMsg.toLowerCase().includes('authentication')) {
+                console.log('Token expired or invalid, re-authenticating...');
+                await handleTokenExpiration();
+                return;
+            }
+            
+            throw new Error(errorMsg);
         }
         
         if (!data.success) {
-            throw new Error(data.error || 'Failed to create shortlink');
+            const errorMsg = data.error || 'Failed to create shortlink';
+            
+            // Check if error is related to token expiration
+            if (errorMsg.toLowerCase().includes('invalid') && errorMsg.toLowerCase().includes('token') ||
+                errorMsg.toLowerCase().includes('expired') ||
+                errorMsg.toLowerCase().includes('authentication')) {
+                console.log('Token expired or invalid, re-authenticating...');
+                await handleTokenExpiration();
+                return;
+            }
+            
+            throw new Error(errorMsg);
         }
         
         // Show success

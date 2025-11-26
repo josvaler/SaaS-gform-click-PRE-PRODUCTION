@@ -130,21 +130,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             // Send confirmation email to user
                             try {
                                 $userEmail = $user['email'] ?? null;
-                                if (!empty($userEmail)) {
+                                if (empty($userEmail)) {
+                                    error_log('Link creation: User email is empty, skipping email send. User ID: ' . (int)$user['id']);
+                                } else {
+                                    error_log('Link creation: Attempting to send email to: ' . $userEmail . ' for link: ' . $shortCode);
                                     $emailService = new EmailService();
                                     $userName = $user['name'] ?? $user['email'] ?? '';
                                     $emailSubject = 'Your Short Link Has Been Created - GForms';
                                     $emailBody = generate_link_creation_email_template($link, $appConfig['base_url'], $userName);
                                     
                                     $emailSent = $emailService->send($userEmail, $emailSubject, $emailBody);
-                                    if (!$emailSent) {
+                                    if ($emailSent) {
+                                        error_log('Link creation: Email sent successfully to: ' . $userEmail);
+                                    } else {
                                         // Log error but don't fail the link creation
-                                        error_log('Failed to send link creation email to: ' . $userEmail);
+                                        error_log('Link creation: Failed to send email to: ' . $userEmail . '. Check SMTP configuration and error logs.');
                                     }
                                 }
                             } catch (\Throwable $emailError) {
                                 // Log email error but don't fail the link creation
-                                error_log('Error sending link creation email: ' . $emailError->getMessage());
+                                error_log('Link creation: Error sending email - ' . $emailError->getMessage());
+                                error_log('Link creation: Email error trace: ' . $emailError->getTraceAsString());
                             }
                             
                             redirect('/link/' . $shortCode);
