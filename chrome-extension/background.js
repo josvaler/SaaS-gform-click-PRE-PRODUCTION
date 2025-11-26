@@ -89,8 +89,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     
     if (request.action === 'getCurrentTab') {
+        // Check if tabs permission is available (activeTab was removed for faster Google review)
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (tabs[0]) {
+            if (chrome.runtime.lastError) {
+                console.warn('Tabs API not available:', chrome.runtime.lastError.message);
+                sendResponse({ 
+                    success: false, 
+                    error: 'Tab access not available. Please enter the URL manually.' 
+                });
+                return;
+            }
+            if (tabs && tabs[0]) {
                 sendResponse({ success: true, url: tabs[0].url, title: tabs[0].title });
             } else {
                 sendResponse({ success: false, error: 'No active tab found' });
