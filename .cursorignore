@@ -1,0 +1,25 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# Dependencies
+node_modules/
+vendor/
+
+# User data and generated files
+uploads/
+processed/
+/public/qr/*.png
+/var/lib/php/sessions/
+
+# Logs
+*.log
+logs/
+*.csv
+
+# OS and IDE
+.DS_Store
+.idea/
+.vscode/
